@@ -1,15 +1,15 @@
 /*********************************************************************
- * @file        SNS_SoilMoisture.h
+ * @file        ACT_Cmd_IrrigValve.h
  * @brief       Template_BriefDescription.
  * @details     TemplateDetailsDescription.\n
  *
- * @author      AUDMBA
+ * @author      xxxxxx
  * @date        jj/mm/yyyy
  * @version     1.0
  */
   
-#ifndef SNS_SOILMOSTURE_H_INCLUDED
-#define SNS_SOILMOSTURE_H_INCLUDED
+#ifndef ACT_IRRIGVALVE_H_INCLUDED
+#define ACT_IRRIGVALVE_H_INCLUDED
 
 
 
@@ -18,9 +18,9 @@
     // ********************************************************************
     // *                      Includes
     // ********************************************************************
-    #include "../AppCommon/TypeCommon.h"
+    #include "AppCommon/TypeCommon.h"
 
-    #include "../ConfigSpecific/Arduino_ConfigSpecific.h"
+    #include "ConfigSpecific/Arduino_ConfigSpecific.h"
 
     #include <Arduino.h>
     // ********************************************************************
@@ -34,49 +34,55 @@
     // ********************************************************************
     // *                      Prototypes
     // ********************************************************************
-    /**
-    *
-    *	@brief
-    *	@details
-    *
-    *
-    *	@param[in] 
-    *	@param[out]
-    *	 
-    *
-    *
-    */
-    t_eReturnCode SNS_SoilMoisture_Cfg(t_uint8 f_pin, PinMode f_Pinmode);
-    /**
-    *
-    *	@brief
-    *	@details
-    *
-    *
-    *	@param[in] 
-    *	@param[out]
-    *	 
-    *
-    *
-    */
-    t_eReturnCode SNS_SoilMoisture_Get(t_uint16 *f_value);
-
+        
     // ********************************************************************
     // *                      Variables
     // ********************************************************************
     
-    //********************************************************************************
-    //                      Local functions - Prototypes
-    //********************************************************************************
-
     //****************************************************************************
-    //                      Public functions - Implementation
+    //                      Public functions - Prototypes
     //********************************************************************************
+    /**
+    *
+    *	@brief
+    *	@details
+    *
+    *
+    *	@param[in] 
+    *	@param[out]
+    *	 
+    *
+    *
+    */
+    t_eReturnCode ACT_Cmd_IrrigValve_Cfg(t_uint8 f_pin, PinMode f_Pinmode);
+    /**
+    *
+    *	@brief
+    *	@details
+    *
+    *
+    *	@param[in] 
+    *	@param[out]
+    *	 
+    *
+    *
+    */
+    t_eReturnCode ACT_Cmd_IrrigValve_Get(t_uint16 *f_value);
+    /**
+    *
+    *	@brief
+    *	@details
+    *
+    *
+    *	@param[in] 
+    *	@param[out]
+    *	 
+    *
+    *
+    */
+    t_eReturnCode ACT_Cmd_IrrigValve_Set(t_uint16 f_value);
 
-    //********************************************************************************
-    //                      Local functions - Implementation
-    //********************************************************************************
-#endif // SNS_SOILMOSTURE_H_INCLUDED           
+#endif // ACT_IRRIGATIONVALVE_H_INCLUDED           
 //************************************************************************************
 // End of File
 //************************************************************************************
@@ -87,8 +93,8 @@
  *	@details
  *
  *
- *	@param[in] 
- *	@param[out]
+ *	@params[in] 
+ *	@params[out]
  *	 
  *
  *

@@ -7,6 +7,8 @@
  * @date        jj/mm/yyyy
  * @version     1.0
  */
+#ifndef TYPE_COMMON_H_INCLUDED
+#define TYPE_COMMON_H_INCLUDED
  
     typedef enum
 
@@ -59,3 +61,5 @@ typedef float t_float32;                    /**< 32-bit float type. */
 //typedef unsigned long long t_uint64;        /**< Unsigned 64-bit type. */
 //typedef signed long long t_sint64;          /**< Signed 64-bit type. */
 typedef char t_char;
+
+#endif //TYPE_COMMON_H

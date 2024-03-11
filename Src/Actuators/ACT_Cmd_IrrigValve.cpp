@@ -1,10 +1,10 @@
 /*********************************************************************
- * @file        SNS_SoilpH.c
+ * @file        ACT_IrrigationValve.c
  * @brief       Template_BriefDescription.
  * @details     TemplateDetailsDescription.\n
  *
- * @author      xxxxxx
- * @date        jj/mm/yyyy
+ * @author      AUDMBA
+ * @date        09/03/2024
  * @version     1.0
  *********************************************************************/
   
@@ -17,7 +17,7 @@
 // ********************************************************************
 // *                      Includes
 // ********************************************************************
-
+#include "ACT_Cmd_IrrigValve.h"
 // ********************************************************************
 // *                      Defines
 // ********************************************************************
@@ -25,7 +25,7 @@
 // ********************************************************************
 // *                      Types
 // ********************************************************************
-
+t_uint8 g_IrrigValve_Pin_u8 = (t_uint8)0;
 // ********************************************************************
 // *                      Prototypes
 // ********************************************************************
@@ -36,12 +36,55 @@
 
 //********************************************************************************
 //                      Local functions - Prototypes
-//*******************************************************************************
+//********************************************************************************
 
 //****************************************************************************
 //                      Public functions - Implementation
 //********************************************************************************
+/*************************
+ACT_IrrigValve_Cfg
+*************************/
+t_eReturnCode ACT_Cmd_IrrigValve_Cfg(t_uint8 f_pin, PinMode f_Pinmode)
+{
+    t_eReturnCode Ret_e = RC_OK;
+    if(f_pin < (t_uint8)0 || f_pin > MAX_PIN)
+    {
+        Ret_e = RC_ERROR_NOT_ALLOWED;
+    }
+    if (Ret_e == RC_OK)
+    {
+        g_IrrigValve_Pin_u8 = f_pin;
+        pinMode(f_pin, f_Pinmode);
+    }    
+    return Ret_e;
+}
+/*************************
+ACT_IrrigValve_Set
+*************************/
+t_eReturnCode ACT_IrrigValve_Set(t_uint16 f_value)
+{
+    t_eReturnCode Ret_e = RC_OK;
+    // Get the value of the ACT
+    return Ret_e;
 
+}
+/*************************
+ACT_IrrigValve_Get
+*************************/
+t_eReturnCode ACT_Cmd_IrrigValve_Get(t_uint16 *f_value)
+{
+    t_eReturnCode Ret_e = RC_OK;
+    if(f_value == NULL)
+    {
+        Ret_e = RC_ERROR_PARAM_INVALID;
+    }
+    if(Ret_e == RC_OK)
+    {
+        *f_value = analogRead((pin_size_t)g_IrrigValve_Pin_u8);        
+    }
+    return Ret_e;
+
+}
 //********************************************************************************
 //                      Local functions - Implementation
 //******************************************************************************** 
@@ -62,9 +105,3 @@
  *
  *
  */
-void Erase(void);
-
-void Erase(void)
-{
-    return;
-}
