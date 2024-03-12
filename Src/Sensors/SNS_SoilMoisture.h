@@ -46,7 +46,7 @@
     *
     *
     */
-    t_eReturnCode SNS_SoilMoisture_Cfg(t_uint8 f_pin, PinMode f_Pinmode);
+    t_eReturnCode SNS_SoilMoisture_Cfg(t_uint8 f_pin, t_eArduino_PinMode f_Pinmode);
     /**
     *
     *	@brief

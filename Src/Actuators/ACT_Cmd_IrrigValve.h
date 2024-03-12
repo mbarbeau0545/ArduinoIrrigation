@@ -54,7 +54,7 @@
     *
     *
     */
-    t_eReturnCode ACT_Cmd_IrrigValve_Cfg(t_uint8 f_pin, PinMode f_Pinmode);
+    t_eReturnCode ACT_Cmd_IrrigValve_Cfg(t_uint8 f_pin, t_eArduino_PinMode f_Pinmode);
     /**
     *
     *	@brief

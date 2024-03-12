@@ -45,7 +45,7 @@ t_uint8 g_SoilMoisture_Pin_u8;
 /*************************
 SNS_SoilMoisture_Cfg
 *************************/
-t_eReturnCode SNS_SoilMoisture_Cfg(t_uint8 f_pin, PinMode f_Pinmode)
+t_eReturnCode SNS_SoilMoisture_Cfg(t_uint8 f_pin, t_eArduino_PinMode f_Pinmode)
 {
     t_eReturnCode Ret_e = RC_OK;
     if(f_pin < (t_uint8) 0|| f_pin > (t_uint8)MAX_PIN)
@@ -71,7 +71,7 @@ t_eReturnCode SNS_SoilMoisture_Get( t_uint16 *f_value)
     }
     if(Ret_e == RC_OK)
     {
-        *f_value =  analogRead(g_SoilMoisture_Pin_u8);        
+        *f_value =  analogRead((t_uint8)g_SoilMoisture_Pin_u8);        
     }
     return Ret_e;
 

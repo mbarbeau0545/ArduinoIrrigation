@@ -20,7 +20,11 @@
     // ********************************************************************
     #include "../AppCommon/TypeCommon.h"
 
+    #include "../Sensors/SNS_AirMoisture.h"
+    #include "../Sensors/SNS_AirTemp.h"
     #include "../Sensors/SNS_SoilMoisture.h"
+    #include "../Sensors/SNS_SoilTemp.h"
+    #include "../Sensors/SNS_Soil_pH.h"
 
     #include <Arduino.h>
     // ********************************************************************
@@ -41,28 +45,28 @@
 		SNS_NUMBER,
 	}t_eSNS_Sensors;
 
-	t_eReturnCode (*g_Sensors_Cfg_apf[SNS_NUMBER])(t_uint8, PinMode) = {
+	t_eReturnCode (*g_Sensors_Cfg_apf[SNS_NUMBER])(t_uint8, t_eArduino_PinMode) = {
 		SNS_SoilMoisture_Cfg,
-		/*SNS_SoilTemp_Cfg,
+		SNS_SoilTemp_Cfg,
 		SNS_Soil_pH_Cfg,
 		SNS_AirTemp_Cfg,
-		SNS_AirMoisture_Cfg,*/
+		SNS_AirMoisture_Cfg,
 	};
 
 	t_eReturnCode (*g_Sensors_Get_apf[SNS_NUMBER])(t_uint16*) = {
 		SNS_SoilMoisture_Get,
-		/*SNS_SoilTemp_Get,
+		SNS_SoilTemp_Get,
 		SNS_Soil_pH_Get,
 		SNS_AirTemp_Get,
-		SNS_AirMoisture_Get,*/
+		SNS_AirMoisture_Get,
 	};
     /* CAUTION : Automatic generated code section: End */
 
-    t_uint8 g_SensorsPin_ua[SNS_NUMBER] = {(t_uint8)1,
+    t_uint8 g_SensorsPin_ua[SNS_NUMBER] = {(t_uint8)2,
                                            (t_uint8)2,
                                            (t_uint8)3};
 
-    PinMode g_Sensors_PinMode_ea[SNS_NUMBER] = {INPUT, OUTPUT,OUTPUT};
+    t_eArduino_PinMode g_Sensors_PinMode_ea[SNS_NUMBER] = {PINMODE_INPUT, PINMODE_INPUT};
 
 
     

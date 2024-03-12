@@ -245,7 +245,7 @@ class LoadConfig_FromExcel():
                 generated_code_str += f"\t\tSNS_{str(Sensor[SENSOR_CODE]).upper()},\n"
             generated_code_str += "\n\t\tSNS_NUMBER,\n"
             generated_code_str += "\t}t_eSNS_Sensors;\n\n"
-            generated_code_str += "\tt_eReturnCode (*g_Sensors_Cfg_apf[SNS_NUMBER])(t_uint8, PinMode) = {\n"
+            generated_code_str += "\tt_eReturnCode (*g_Sensors_Cfg_apf[SNS_NUMBER])(t_uint8, t_eArduino_PinMode) = {\n"
             #make g_Sensors_Cfg_ap
             for Sensor in ArrayList:
                 generated_code_str += f"\t\tSNS_{str(Sensor[SENSOR_CODE])}_Cfg,\n"
@@ -289,7 +289,7 @@ class LoadConfig_FromExcel():
                 generated_code_str += f"\t\tACT_{str(Actuator[ACTUATOR_CODE]).upper()},\n"
             generated_code_str += "\n\t\tACT_NUMBER,\n"
             generated_code_str += "\t}t_eACT_Actuators;\n"
-            generated_code_str += "\tt_eReturnCode (*g_Actuators_Cfg_apf[ACT_NUMBER])(t_uint8, PinMode) = {\n"
+            generated_code_str += "\tt_eReturnCode (*g_Actuators_Cfg_apf[ACT_NUMBER])(t_uint8, t_eArduino_PinMode) = {\n"
             #make g_Actuators_Cfg_apf 
             for Actuator in ArrayList:
                 generated_code_str += f"\t\tACT_{str(Actuator[ACTUATOR_CODE])}_Cfg,\n"

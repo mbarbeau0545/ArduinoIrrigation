@@ -44,7 +44,7 @@ t_uint8 g_IrrigValve_Pin_u8 = (t_uint8)0;
 /*************************
 ACT_IrrigValve_Cfg
 *************************/
-t_eReturnCode ACT_Cmd_IrrigValve_Cfg(t_uint8 f_pin, PinMode f_Pinmode)
+t_eReturnCode ACT_Cmd_IrrigValve_Cfg(t_uint8 f_pin, t_eArduino_PinMode f_Pinmode)
 {
     t_eReturnCode Ret_e = RC_OK;
     if(f_pin < (t_uint8)0 || f_pin > MAX_PIN)
@@ -59,17 +59,18 @@ t_eReturnCode ACT_Cmd_IrrigValve_Cfg(t_uint8 f_pin, PinMode f_Pinmode)
     return Ret_e;
 }
 /*************************
-ACT_IrrigValve_Set
+ACT_Cmd_IrrigValve_Set
 *************************/
-t_eReturnCode ACT_IrrigValve_Set(t_uint16 f_value)
+t_eReturnCode ACT_Cmd_IrrigValve_Set(t_uint16 f_value)
 {
     t_eReturnCode Ret_e = RC_OK;
     // Get the value of the ACT
+    digitalWrite(g_IrrigValve_Pin_u8, f_value);
     return Ret_e;
 
 }
 /*************************
-ACT_IrrigValve_Get
+ACT_Cmd_IrrigValve_Get
 *************************/
 t_eReturnCode ACT_Cmd_IrrigValve_Get(t_uint16 *f_value)
 {
@@ -80,11 +81,13 @@ t_eReturnCode ACT_Cmd_IrrigValve_Get(t_uint16 *f_value)
     }
     if(Ret_e == RC_OK)
     {
-        *f_value = analogRead((pin_size_t)g_IrrigValve_Pin_u8);        
+        *f_value = digitalRead((t_uint8)g_IrrigValve_Pin_u8);        
     }
     return Ret_e;
 
 }
+
+ 
 //********************************************************************************
 //                      Local functions - Implementation
 //******************************************************************************** 
