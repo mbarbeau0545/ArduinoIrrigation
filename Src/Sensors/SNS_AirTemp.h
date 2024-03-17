@@ -26,6 +26,7 @@
 
     #include "../ConfigSpecific/Arduino_ConfigSpecific.h"
 
+    #include "ArduinoLib/DHT.h"
     #include <Arduino.h>
     // ********************************************************************
     // *                      Types

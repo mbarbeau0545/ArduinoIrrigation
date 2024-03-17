@@ -30,7 +30,13 @@
     // ********************************************************************
     // *                      Defines
     // ********************************************************************
-
+    // if using DHT Sensor, both sensor have the same pin 
+    #define PIN_AIRTEMP 2
+    #define PIN_AIRMOISTURE PIN_AIRTEMP
+    #define PIN_SOILMOISTURE 3
+    #define PIN_SOILTEMP 4 
+    #define PIN_SOIL_PH 5
+    
     // ********************************************************************
     // *                      Types
     // ********************************************************************
@@ -62,11 +68,21 @@
 	};
     /* CAUTION : Automatic generated code section: End */
 
-    t_uint8 g_SensorsPin_ua[SNS_NUMBER] = {(t_uint8)2,
-                                           (t_uint8)2,
-                                           (t_uint8)3};
+    t_uint8 g_SensorsPin_ua[SNS_NUMBER] = {
+                                           (t_uint8)PIN_SOILMOISTURE,                  //SNS_SOILMOISTURE, 
+                                           (t_uint8)PIN_SOILTEMP,                      //SNS_SOILTEMP,
+                                           (t_uint8)PIN_SOIL_PH,                       //SNS_SOIL_PH,
+                                           (t_uint8)PIN_AIRTEMP,                       //SNS_AIRTEMP,
+                                           (t_uint8)PIN_AIRMOISTURE,                   //SNS_AIRMOISTURE,   
+                                        };
 
-    t_eArduino_PinMode g_Sensors_PinMode_ea[SNS_NUMBER] = {PINMODE_INPUT, PINMODE_INPUT};
+    t_eArduino_PinMode g_Sensors_PinMode_ea[SNS_NUMBER] = {
+                                                    PINMODE_INPUT,                      //SNS_SOILMOISTURE, 
+                                                    PINMODE_INPUT,                      //SNS_SOILTEMP,
+                                                    PINMODE_INPUT,                      //SNS_SOIL_PH,
+                                                    PINMODE_OUTPUT,                     //SNS_AIRTEMP,
+                                                    PINMODE_OUTPUT,                     //SNS_AIRMOISTURE,   
+                                                    };
 
 
     

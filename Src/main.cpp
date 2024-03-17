@@ -172,8 +172,9 @@ static t_eReturnCode s_Main_GetTask_FromMaster(void)
 // ********************************************************************
 void setup() 
 {
+    Serial.begin(9600);
     //make all config in once
-    t_eReturnCode Ret_e = RC_OK;
+    /*t_eReturnCode Ret_e = RC_OK;
     t_uint8 LI_u8;
     for( LI_u8 = 0 ; LI_u8 < ACT_NUMBER && Ret_e == RC_OK; LI_u8++)
     {        
@@ -192,8 +193,11 @@ void setup()
     {
         g_ActuatorsInitialize_b = (t_bool)true;
         Ret_e = RC_ERROR_MODULE_NOT_INITIALIZED;
-    }
+    }*/
     //initiate Communication SPI
+    //SNS_AirMoisture_Cfg(13, PINMODE_INPUT);
+    //SNS_AirTemp_Cfg(13,PINMODE_INPUT);
+    SNS_SoilMoisture_Cfg(A0,PINMODE_INPUT);
 }
 
 // ********é************************************************************
@@ -201,9 +205,29 @@ void setup()
 // ********************************************************************
 void loop() 
 {
-
     t_eReturnCode Ret_e = RC_OK;
-    if(g_SensorsInitialize_b != (t_bool)true || g_ActuatorsInitialize_b != (t_bool)true)
+    t_uint16 soilMoisture_u16;
+    Ret_e = SNS_SoilMoisture_Get(&soilMoisture_u16);
+    Serial.print("RetCode Moist:");
+    Serial.println(Ret_e);
+    Serial.print("Value in main_moist :");
+    Serial.print(soilMoisture_u16);
+    Serial.println("%");
+    /*t_eReturnCode Ret_e = RC_OK;
+    t_uint16 humidity_f32;
+    t_uint16 temperature_f32;
+    Ret_e = SNS_AirMoisture_Get(&humidity_f32);
+    Serial.print("RetCode Moist:");
+    Serial.println(Ret_e);
+    Ret_e = SNS_AirTemp_Get(&temperature_f32);
+    Serial.print("RetCode Temp:");
+    Serial.println(Ret_e);
+    Serial.print("Value in main_moist :");
+    Serial.println(humidity_f32);
+    Serial.print("Value in main temp:");
+    Serial.println(temperature_f32);*/
+    delay(2000);
+    /*if(g_SensorsInitialize_b != (t_bool)true || g_ActuatorsInitialize_b != (t_bool)true)
     {
         Ret_e = RC_ERROR_MODULE_NOT_INITIALIZED;
     }
@@ -237,7 +261,7 @@ void loop()
                 break;
             }
         }
-    }
+    }*/
     
 }
 

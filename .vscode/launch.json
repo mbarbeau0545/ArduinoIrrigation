@@ -9,10 +9,18 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "cmake",
+            "request": "launch",
+            "name": "Debug portfile(s)",
+            "cmakeDebugType": "external",
+            "pipeName": "\\\\.\\pipe\\vcpkg_ext_portfile_dbg",
+            "preLaunchTask": "Debug vcpkg commands"
+        },
+        {
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug",
-            "executable": "C:/Users/mbarb/Documents/PlatformIO/Projects/Arduino_Irrigate/.pio/build/uno/firmware.elf",
+            "executable": "C:/Users/mbarb/OneDrive/Documents/08_Projet_Perso/08A_Agriculture/Smart_Agri_Project/Software/Arduino_Irrigation/.pio/build/uno/firmware.elf",
             "projectEnvName": "uno",
             "toolchainBinDir": "C:/Users/mbarb/.platformio/packages/toolchain-atmelavr/bin",
             "internalConsoleOptions": "openOnSessionStart",
@@ -25,7 +33,7 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (skip Pre-Debug)",
-            "executable": "C:/Users/mbarb/Documents/PlatformIO/Projects/Arduino_Irrigate/.pio/build/uno/firmware.elf",
+            "executable": "C:/Users/mbarb/OneDrive/Documents/08_Projet_Perso/08A_Agriculture/Smart_Agri_Project/Software/Arduino_Irrigation/.pio/build/uno/firmware.elf",
             "projectEnvName": "uno",
             "toolchainBinDir": "C:/Users/mbarb/.platformio/packages/toolchain-atmelavr/bin",
             "internalConsoleOptions": "openOnSessionStart"
@@ -34,19 +42,11 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (without uploading)",
-            "executable": "C:/Users/mbarb/Documents/PlatformIO/Projects/Arduino_Irrigate/.pio/build/uno/firmware.elf",
+            "executable": "C:/Users/mbarb/OneDrive/Documents/08_Projet_Perso/08A_Agriculture/Smart_Agri_Project/Software/Arduino_Irrigation/.pio/build/uno/firmware.elf",
             "projectEnvName": "uno",
             "toolchainBinDir": "C:/Users/mbarb/.platformio/packages/toolchain-atmelavr/bin",
             "internalConsoleOptions": "openOnSessionStart",
             "loadMode": "manual"
-        },
-        {
-            "type": "cmake",
-            "request": "launch",
-            "name": "Debug portfile(s)",
-            "cmakeDebugType": "external",
-            "pipeName": "\\\\.\\pipe\\vcpkg_ext_portfile_dbg",
-            "preLaunchTask": "Debug vcpkg commands"
         }
     ]
 }

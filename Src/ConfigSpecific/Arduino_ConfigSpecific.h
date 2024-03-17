@@ -22,15 +22,35 @@
     // ********************************************************************
     // *                      Defines
     // ********************************************************************
+    //uncomment next line to make DEBUG MODE OPERATIONNAL
+    //#define DHT_DEBUG
+
+    // Définition des macros pour le débogage
+    #define DEBUG_PRINTER                                                          \
+        Serial /**< Define where debug output will be printed.                       \
+          */
+
+    #ifdef DHT_DEBUG
+    #define DEBUG_PRINT(...)                                                       \
+    { DEBUG_PRINTER.print(__VA_ARGS__); }
+    #define DEBUG_PRINTLN(...)                                                     \
+    { DEBUG_PRINTER.println(__VA_ARGS__); }
+    #else
+    #define DEBUG_PRINT(...)                                                       \
+    {} // Placeholder si le débogage est désactivé
+    #define DEBUG_PRINTLN(...)                                                     \
+    {} // Placeholder si le débogage est désactivé
+    #endif
+
     #define MAX_PIN 13
     // ********************************************************************
     // *                      Types
     // ********************************************************************
     typedef enum 
     {
-        PINMODE_INPUT = 0x00,
-        PINMODE_OUTPUT = 0x01,
-        PINMODE_PULLUP = 0x02,
+        PINMODE_INPUT = 0x00,   // INPUT
+        PINMODE_OUTPUT = 0x01,  // OUTPUT
+        PINMODE_PULLUP = 0x02,  // PULL_UP
 
         PINMODE_NB,
     }t_eArduino_PinMode;

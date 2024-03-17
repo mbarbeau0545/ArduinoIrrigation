@@ -22,7 +22,7 @@
 // ********************************************************************
 // *                      Defines
 // ********************************************************************
-
+#define MAX_VALUE_SOILMOIS_SENSOR (t_uint16)1020
 // ********************************************************************
 // *                      Types
 // ********************************************************************
@@ -45,6 +45,9 @@ t_uint8 g_SoilMoisture_Pin_u8;
 /*************************
 SNS_SoilMoisture_Cfg
 *************************/
+/*   0 ~300 in water
+     300~700 humid soil
+     700~950 dry soil*/
 t_eReturnCode SNS_SoilMoisture_Cfg(t_uint8 f_pin, t_eArduino_PinMode f_Pinmode)
 {
     t_eReturnCode Ret_e = RC_OK;
@@ -62,16 +65,21 @@ t_eReturnCode SNS_SoilMoisture_Cfg(t_uint8 f_pin, t_eArduino_PinMode f_Pinmode)
 /*************************
 SNS_SoilMoisture_Get
 *************************/
-t_eReturnCode SNS_SoilMoisture_Get( t_uint16 *f_value)
+t_eReturnCode SNS_SoilMoisture_Get( t_uint16 *f_value_16)
 {
     t_eReturnCode Ret_e = RC_OK;
-    if(f_value == NULL)
+    t_uint16 valueReceived_u16;
+    if(f_value_16 == (t_uint16 *)NULL)
     {
         Ret_e = RC_ERROR_PARAM_INVALID;
     }
     if(Ret_e == RC_OK)
     {
-        *f_value =  analogRead((t_uint8)g_SoilMoisture_Pin_u8);        
+        *f_value_16 = (t_uint16)0;
+        valueReceived_u16 = (t_uint16)analogRead((t_uint8)g_SoilMoisture_Pin_u8);   
+        //make % value
+        Serial.println(valueReceived_u16);
+        *f_value_16 = (t_uint16)(valueReceived_u16 / 10);
     }
     return Ret_e;
 

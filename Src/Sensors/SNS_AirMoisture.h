@@ -21,6 +21,7 @@
     #include "../AppCommon/TypeCommon.h"
 
     #include "../ConfigSpecific/Arduino_ConfigSpecific.h"
+    #include "../ArduinoLib/DHT.h"
 
     #include <Arduino.h>
     // ********************************************************************
@@ -54,7 +55,7 @@
     *
     *
     */
-    t_eReturnCode SNS_AirMoisture_Cfg(t_uint8 f_pin, t_eArduino_PinMode f_Pinmode);
+    t_eReturnCode SNS_AirMoisture_Cfg(t_uint8 f_pin_u8, t_eArduino_PinMode f_pinMode_e);
     /**
     *
     *	@brief
