@@ -31,15 +31,23 @@
     // *                      Defines
     // ********************************************************************
     // if using DHT Sensor, both sensor have the same pin 
-    #define PIN_AIRTEMP 2
+    #define PIN_AIRTEMP 13
     #define PIN_AIRMOISTURE PIN_AIRTEMP
-    #define PIN_SOILMOISTURE 3
-    #define PIN_SOILTEMP 4 
+    #define PIN_SOILMOISTURE A0
+    #define PIN_SOILTEMP 11
     #define PIN_SOIL_PH 5
     
     // ********************************************************************
     // *                      Types
     // ********************************************************************
+    typedef union 
+    {
+        t_float32 retVal_f32;
+        t_uint16  retVal_u16;
+        t_bool    retVal_b;
+
+    }t_uSNS_ReturnGetValue;
+
     /* CAUTION : Automatic generated code section: Start */
 	typedef enum {
 		SNS_SOILMOISTURE,
@@ -59,7 +67,7 @@
 		SNS_AirMoisture_Cfg,
 	};
 
-	t_eReturnCode (*g_Sensors_Get_apf[SNS_NUMBER])(t_uint16*) = {
+	t_eReturnCode (*g_Sensors_Get_apf[SNS_NUMBER])(t_uint16 *) = {
 		SNS_SoilMoisture_Get,
 		SNS_SoilTemp_Get,
 		SNS_Soil_pH_Get,
@@ -80,7 +88,7 @@
                                                     PINMODE_INPUT,                      //SNS_SOILMOISTURE, 
                                                     PINMODE_INPUT,                      //SNS_SOILTEMP,
                                                     PINMODE_INPUT,                      //SNS_SOIL_PH,
-                                                    PINMODE_OUTPUT,                     //SNS_AIRTEMP,
+                                                    PINMODE_INPUT,                     //SNS_AIRTEMP,
                                                     PINMODE_OUTPUT,                     //SNS_AIRMOISTURE,   
                                                     };
 

@@ -21,6 +21,7 @@
     #include "../AppCommon/TypeCommon.h"
 
     #include "../ConfigSpecific/Arduino_ConfigSpecific.h"
+    //#include "../ConfigSpecific/Sensors_ConfigSpecific.h"
 
     #include <Arduino.h>
     // ********************************************************************
@@ -59,7 +60,7 @@
     *
     *
     */
-    t_eReturnCode SNS_SoilMoisture_Get(t_uint16 *f_value);
+    t_eReturnCode SNS_SoilMoisture_Get(t_uint16 *f_value_u);
 
     // ********************************************************************
     // *                      Variables

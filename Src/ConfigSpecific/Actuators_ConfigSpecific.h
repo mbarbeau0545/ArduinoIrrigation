@@ -35,6 +35,8 @@
 
 		ACT_NUMBER,
 	}t_eACT_Actuators;
+
+
 	t_eReturnCode (*g_Actuators_Cfg_apf[ACT_NUMBER])(t_uint8, t_eArduino_PinMode) = {
 		ACT_Cmd_IrrigValve_Cfg,
 	};
@@ -54,7 +56,9 @@
     // ********************************************************************
     // *                      Variables
     // ********************************************************************
-    t_uint8 g_ActuatorsPin_ua[ACT_NUMBER] = {2};
+    t_uint8 g_ActuatorsPin_ua[ACT_NUMBER] = {
+        12                            //ACT_CMD_IRRIGVALVE
+    };
 
     t_eArduino_PinMode g_Actuators_PinMode_ea[ACT_NUMBER] = {PINMODE_OUTPUT};
     
