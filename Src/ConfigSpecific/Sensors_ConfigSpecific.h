@@ -14,7 +14,6 @@
 
 
 
-
     // ********************************************************************
     // *                      Includes
     // ********************************************************************
@@ -31,7 +30,7 @@
     // *                      Defines
     // ********************************************************************
     // if using DHT Sensor, both sensor have the same pin 
-    #define PIN_AIRTEMP 13
+    #define PIN_AIRTEMP 12
     #define PIN_AIRMOISTURE PIN_AIRTEMP
     #define PIN_SOILMOISTURE A0
     #define PIN_SOILTEMP 11

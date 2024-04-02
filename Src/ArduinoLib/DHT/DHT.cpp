@@ -276,7 +276,7 @@ t_eReturnCode DHT_ReadMoisture(t_float32 *f_moistValue_pf32, t_bool f_forcedMode
     {
         g_ModuleInitialized_b = (t_bool)false;
     }
-    DEBUG_PRINTLN(F("Retval DHT_ReadTemperature:"));
+    DEBUG_PRINTLN(F("Retval DHT_ReadMoisture:"));
     DEBUG_PRINTLN(Ret_e);
     return Ret_e;
 }
