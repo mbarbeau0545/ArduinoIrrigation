@@ -28,7 +28,6 @@
 
     #define MODEM_TIMEOUT          10000            /* Maximum time waiting for device to respond*/
     #define MODEM_EXTENDED_TIMEOUT 60000
-    #define MODEM_MAX_BUFF_SIZE    128              /*Max buffer size*/
     // Maximum size of a SSID
     #define ESP_WL_SSID_MAX_LENGTH 32
     // Length of passphrase. Valid lengths are 8-63.
@@ -49,6 +48,8 @@
     #define ESP_NA_STATE -1
     //Maximum number of attempts to establish esp connection
     #define ESP_WL_MAX_ATTEMPT_CONNECTION	5
+    //TCP, UDP max buufer size to send data 
+    #define ESP_TCP_UDP_MAX_BUFFER_SIZE 2048
     //SSL max buffer size 
     #define ESP_SSL_MAX_BUFFER_SIZE 2048
     //SSL min buffer size 
@@ -85,52 +86,14 @@
         t_eESP_WifiMode   WifiMode_e;
         t_eESP_WiFiStatus WifiStatus_e;
     }t_sESP_WifiCfg;
-    /*START : Connection State of the different kind of connection */
-    typedef enum
-    {
-        ESP_TCP_DISANBALE = 0,
-        ESP_TCP_ENBALE,
-        ESP_TCP_LISTEN,
-        ESP_TCP_SYN_SENT,
-        ESP_TCP_SYN_RCVD,
-        ESP_TCP_FIN_WAIT_1,
-        ESP_TCP_FIN_WAIT_2,
-        ESP_TCP_CLOSE_WAIT,
-        ESP_TCP_CLOSING,
-        ESP_TCP_LAST_ACK,
-        ESP_TCP_TIME_WAIT,
-
-        ESP_TCP_NB,
-    }t_eESP_TCPState;
-
-    typedef enum
-    {
-        ESP_UDP_DISABLE = 0,
-        ESP_UDP_ENABLE,
-        ESP_UDP_SYN_SENT,
-        ESP_UDP_SYN_RCV,
-        ESP_UDP_TIME_WAIT,
-
-        ESP_UDP_NB,
-    }t_eESP_UDPState;
-
     typedef enum 
     {
-        ESP_SSL_DISABLE = 0,
-        ESP_SSL_ENABLE,
-        ESP_SSL_SYN_SENT,
-        ESP_SSL_SYN_RCV,
-        ESP_SSL_TIME_WAIT,
-
-        ESP_SSL_NB,
-    }t_eESP_SSLState;
-    /*END : Connection State of the different kind of connection */
-    typedef union 
-    {
-        t_eESP_TCPState TCP_State_e;
-        t_eESP_UDPState UDPState_e;
-        t_eESP_SSLState SSLState_e;
-    }t_uESP_ConnectionState;
+        ESP_PROTOCOL_STATE_CONNECTED = 0,
+        ESP_PROTOCOL_STATE_DISCONNECT,
+        ESP_PROTOCOL_STATE_FAILED,
+        ESP_PROTOCOL_STATE_SYN_SENT,
+        ESP_PROTOCOL_STATE_SYN_RCV,
+    }t_eESP_ProtocolState;
     typedef enum 
    {
         ESP_CONNECTION_TCP_CLIENT = 0,
@@ -146,7 +109,7 @@
     {
         t_sESP_WifiCfg        WifiCfg_s;
         t_eESP_ConnectionType ConnectType_e;
-        t_uESP_ConnectionState ConnectState_u;
+        t_eESP_ProtocolState ConnectState_e;
     }t_sESP_Cfg;
 
 
@@ -182,6 +145,8 @@
         ESP_SEND_DATA_SERIAL = 0,                   //  transparent transmission mode which require to be single connection mode
         ESP_SEND_DATA_HEX,                          //  Send data hexadecimal way
         ESP_SEND_DATA_BUFF,                         // Write data into TCP-send-buffer, This command can NOT be used on SSL connection.
+
+        ESP_SEND_DATA_NB,
     }t_eESP_SendDataMode;
     // ********************************************************************
     // *                      Prototypes
@@ -213,10 +178,24 @@
     t_eReturnCode ESP_Init(t_uint32 f_baudrate_u32, t_uint8 f_rxPin_u8, t_uint8 f_txPin_u8);
     /**
     *
+    *	@brief      End every Communication outside and inside the ESP
+    *	@details    If Wifi or a Protocol communication is connected, 
+    *               there will be disconnected. The Serial Com is also disconnected.
+    *
+    *
+    *	@param[in] 
+    *	@param[out]
+    *   RC_OK                           : Function succesfully close all communication 
+    *   See ESP_DisConnectWifi and ESP_Close_ProtocolCom
+    */
+    t_eReturnCode ESP_Close(void);
+    /**
+    *
     *	@brief     Connection to the Wifi using the ESP 
     *	@details   Thanks to AT command make connection to the Wifi
     *
     *
+    *	@param[in] f_WifiMode_e    : WiFi Configuration 
     *	@param[in] f_SSID          : ssid of WiFi
     *	@param[in] f_password      : password of Wi_Fi
     *	@param[out]
@@ -228,7 +207,7 @@
     *
     *
     */ 
-    t_eReturnCode ESP_ConnectWifi(const char *f_SSID, const char *f_password);
+    t_eReturnCode ESP_ConnectWifi(t_eESP_WifiMode f_WifiMode_e, const char *f_SSID, const char *f_password);
         /**
     *
     *	@brief Disconnect the Wifi 
@@ -244,17 +223,51 @@
     t_eReturnCode ESP_DisConnectWifi(void);
     /**
     *
-    *	@brief  
+    *	@brief      Enable user to make communication
+    *	@details    The user can choose between 3 protocol communication in
+    *               t_eESP_ConnectionType, TCP, UDP, SSL
+    *
+    *
+    *	@param[in] f_ProtocolCom_Type_e   : kinf of Protocol accepted TCP, UDP, SSL
+    *	@param[in] f_IP_Address_pc        : address IP of Server / may be client ?
+    *	@param[in] f_port_u16             : Port to connect
+    *   @param[out]
+    *   
+    */  
+    t_eReturnCode ESP_Start_ProtocolCom(t_eESP_ConnectionType f_ProtocolCom_Type_e,const char * f_IP_Address_pc, t_uint16 f_port_u16);
+    /**
+    *
+    *	@brief      Close Protocol Communication
     *	@details
     *
     *
     *	@param[in] 
     *	@param[out]
-    *	 
+    *   RC_OK                           : Communication Port closed Succesfully
+    *   See s_ESP_MakeCommand in .c file for other RetVal
     *
     *
     */
-    t_eReturnCode ESP_Cfg(t_eESP_WifiMode f_WifiMode_e, t_eESP_TCPState f_TCPState_e, const char* f_IP_address_pc, t_uint16 f_port_u16);
+    t_eReturnCode ESP_Close_ProtocolCom(void);
+    /**
+    *
+    *	@brief      Allow user to send data using Protocol Communication
+    *	@details    Once ESP_Start_ProtocolCom is call and connection is established 
+    *               as server or client. In the second case user can send msg in different 
+    *               way posssible by the esp according to t_eESP_SendDataMode
+    *
+    *
+    *	@param[in] f_DataMode_e         : Message format 
+    *	@param[in] f_dataToSend_pc      : Message user want to send 
+    *	@param[out]
+    *	RC_ERROR_MODULE_NOT_INITIALIZED : The module was not initialized.\n
+    *   RC_ERROR_PTR_NULL               : At least one of pointor is null.\n
+    *   RC_ERROR_PARAM_INVALID          : f_DataMode_e not allowed.\n
+    *   RC_WARNING_WRONG_CONFIG         : Conexion is not currently estalibished.\n
+    *   RC_ERROR_NOT_ALLOWED            : User can not use SendBuf in SSL connection.\n
+    *   RC_OK                           : Data send succesfully.\n
+    */ 
+    t_eReturnCode ESP_Send_DataWithProtocolCom(t_eESP_SendDataMode f_DataMode_e, const char * f_dataToSend_pc);
     /**
     *
     *	@brief
@@ -266,8 +279,21 @@
     *	 
     *
     *
-    */ 
-    t_eReturnCode ESP_GetCfg(t_sESP_Cfg *f_ESP_Config_e);
+    */
+    t_eReturnCode ESP_Rcv_DataWithProtocolCom(t_eESP_SendDataMode f_DataMode_e, const char * f_RcvData_pc);
+    /**
+    *
+    *	@brief
+    *	@details
+    *
+    *
+    *	@param[in] 
+    *	@param[out]
+    *	 
+    *
+    *
+    */
+    t_eReturnCode ESP_Get_ProtocolCom_Cfg(t_sESP_Cfg *f_ESP_Config_e);
     /**
     *
     *	@brief
