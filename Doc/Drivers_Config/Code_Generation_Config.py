@@ -42,6 +42,7 @@ SENSOR_NAME = 0x00
 SENSOR_CODE = 0x01
 
 ACTUATOR_CODE = 0x01
+SPACE_CST = 44
 #------------------------------------------------------------------------------
 #                                       CLASS
 #------------------------------------------------------------------------------
@@ -134,98 +135,7 @@ class LoadConfig_FromExcel():
                         except:
                             raise Exception("[GetArray_FromExcel] : Cannot extract array from Excel")
 
-        return getArray_a
-    #--------------------------
-    # GetArray_FromExcel
-    #--------------------------
-    """def MakeList_FromExcelArray(self, f_ArrayName_str:str, f_scriptPath_str:str)->t_eReturnCode:
-        RC = t_eReturnCode()
-        Ret_e = RC.OK
-        if(isinstance(f_scriptPath_str,str) != bool(True) and isinstance(f_ArrayName_str,str) !=bool(True)):
-            Ret_e = RC.ERROR_PARAM_INVALID
-            raise Exception("[MakeList_FromExcelArray] : param invalid")
-        if( os.path.isdir(f_scriptPath_str) != bool(True)):
-            Ret_e = RC.ERROR_NOT_ALLOWED
-            raise Exception("[__init__] : Excel path is unknown")
-        if(Ret_e == RC.OK):
-            self._GetLineToGenerateCode(f_scriptPath_str)
-            arrayList = self._GetArray_FromExcel(f_ArrayName_str)
-            if (arrayList == None):
-                Ret_e = RC.ERROR_WRONG_CONFIG
-            if(Ret_e == RC.OK):
-                generateCode_str = ""   
-                generateCode_str = f"{f_ArrayName_str} = [\n"
-                for list in arrayList:
-                    generateCode_str += "    ["
-                    for index,value in enumerate(list):
-                        if(index == len(list)-1):
-                            if isinstance(value,str) == True:
-                                generateCode_str += f"'{value}' "
-                            else:
-                                generateCode_str += f"{value} "
-                        else:
-                            if isinstance(value,str) == True:
-                                generateCode_str += f"'{value}', "
-                            else:
-                                generateCode_str += f"{value}, "
-                    generateCode_str += "],\n"
-                generateCode_str += "]\n"
-                self.line.insert(self.line_start_index + 1, generateCode_str)
-                with open(f_scriptPath_str, "w") as file:
-                    file.writelines(self.line)
-        return Ret_e
-    
-    def MakeDict_FromExcelArray(self,f_ArrayName_str:str, f_scriptPath_str:str)->t_eReturnCode:
-        RC = t_eReturnCode()
-        Ret_e = RC.OK
-        if(isinstance(f_ArrayName_str,str)!= bool(True)and isinstance(f_scriptPath_str,str)!= bool(True)):
-            Ret_e == RC.ERROR_PARAM_INVALID
-            raise Exception ("[MakeDict_FromExcelArray] : param invalid")
-        if( os.path.isdir(f_scriptPath_str) != bool(True)):
-            Ret_e = RC.ERROR_NOT_ALLOWED
-            raise Exception("[__init__] : Excel path is unknown")
-        if(Ret_e == RC.OK):
-            generateCode_str = f"{f_ArrayName_str} = "
-            generateCode_str += "{\n"
-            ValueIsList_b = False
-            self._GetLineToGenerateCode(f_scriptPath_str)
-            arrayList = self._GetArray_FromExcel(f_ArrayName_str)
-            if(arrayList == None):
-                Ret_e = RC.ERROR_WRONG_CONFIG
-            if(Ret_e == RC.OK):
-                if(len(arrayList[0])> 2):
-                    ValueIsList_b = True                
-                for list_a in arrayList:
-                    if(ValueIsList_b == True):
-                        generateCode_str += f"   '{list_a[0]}'  :  ["
-                        for index, value in enumerate(list_a):
-                            if ( index == int(0)):
-                                continue
-                            if(isinstance(value,str) == True):
-                                if(index == len(list_a) - 1):
-                                    generateCode_str += f"  '{str(value)}'],\n"
-                                else:
-                                    generateCode_str += f"  '{str(value)}',"
-                            else:
-                                if(index == len(list_a) - 1):
-                                    generateCode_str += f"  {value}],\n"
-                                else:
-                                    generateCode_str += f"  {value},"
-                    else:  
-                        if(isinstance(list_a[1],str) == True):                        
-                            generateCode_str += f"'{list_a[0]}' :  '{list_a[1]}',\n"
-                        else:
-                            generateCode_str += f"'{list_a[0]}' :  {list_a[1]},\n"
-                generateCode_str += "}\n"
-                
-                self.line.insert(self.line_start_index + 1, generateCode_str)
-            try:
-                with open(f_scriptPath_str, "w") as file:
-                    file.writelines(self.line)
-            except:
-                raise Exception (f"[MakeDict_FromExcelArray] : cannot open file {f_scriptPath_str}")
-        return Ret_e"""
-    
+        return getArray_a  
     def MakeSensorsfiles_fromExcel(self) -> t_eReturnCode:
         RC = t_eReturnCode()
         Ret_e = RC.OK
@@ -245,16 +155,17 @@ class LoadConfig_FromExcel():
                 generated_code_str += f"\t\tSNS_{str(Sensor[SENSOR_CODE]).upper()},\n"
             generated_code_str += "\n\t\tSNS_NUMBER,\n"
             generated_code_str += "\t}t_eSNS_Sensors;\n\n"
-            generated_code_str += "\tt_eReturnCode (*g_Sensors_Cfg_apf[SNS_NUMBER])(t_uint8, t_eArduino_PinMode) = {\n"
-            #make g_Sensors_Cfg_ap
+            #make c_SysActCfg_as 
+            generated_code_str += "\tstatic const t_sSNS_SysSnsCfg c_SysSnsCfg_as[SNS_NUMBER] = \n\t{\n"
+            #make c_SysActCfg_as 
             for Sensor in ArrayList:
-                generated_code_str += f"\t\tSNS_{str(Sensor[SENSOR_CODE])}_Cfg,\n"
-            generated_code_str += "\t};\n\n"
-            generated_code_str += "\tt_eReturnCode (*g_Sensors_Get_apf[SNS_NUMBER])(t_uint16*) = {\n"
-            #make g_Sensors_Get_apf
-            for Sensor in ArrayList:
-                generated_code_str += f"\t\tSNS_{str(Sensor[SENSOR_CODE])}_Get,\n"
-            generated_code_str += "\t};\n"   
+                generated_code_str += "\t\t{"
+                generated_code_str += f"\tSNS_{str(Sensor[SENSOR_CODE])}_Cfg"
+                generated_code_str += " " * (SPACE_CST - len(f"\tSNS_{str(Sensor[SENSOR_CODE])}_Cfg,"))
+                generated_code_str += f"\t,SNS_{str(Sensor[SENSOR_CODE])}_Get,"
+                generated_code_str += " " *(SPACE_CST - len(f"\tSNS_{str(Sensor[SENSOR_CODE])},")) 
+                generated_code_str += "},\n"
+            generated_code_str += "\t};\n" 
             self.line.insert(self.line_start_index + 1, generated_code_str)      
             try:
                 with open(SENSORS_CONFIGSPECIFIC_PATH, "w") as file:
@@ -289,20 +200,16 @@ class LoadConfig_FromExcel():
                 generated_code_str += f"\t\tACT_{str(Actuator[ACTUATOR_CODE]).upper()},\n"
             generated_code_str += "\n\t\tACT_NUMBER,\n"
             generated_code_str += "\t}t_eACT_Actuators;\n"
-            generated_code_str += "\tt_eReturnCode (*g_Actuators_Cfg_apf[ACT_NUMBER])(t_uint8, t_eArduino_PinMode) = {\n"
-            #make g_Actuators_Cfg_apf 
+            generated_code_str += "\tstatic const t_sACT_SysActCfg c_SysActCfg_as[ACT_NUMBER] = \n\t{\n"
+            #make c_SysActCfg_as 
             for Actuator in ArrayList:
-                generated_code_str += f"\t\tACT_{str(Actuator[ACTUATOR_CODE])}_Cfg,\n"
-            generated_code_str += "\t};\n\n"
-            generated_code_str += "\tt_eReturnCode (*g_Actuators_Get_apf[SNS_NUMBER])(t_uint16*) = {\n"
-            #make g_Actuators_Get_apf
-            for Actuator in ArrayList:
-                generated_code_str += f"\t\tACT_{str(Actuator[ACTUATOR_CODE])}_Get,\n"
-            generated_code_str += "\t};\n\n"
-            generated_code_str += "\tt_eReturnCode (*g_Actuators_Set_apf[SNS_NUMBER])(t_uint16) = {\n"
-            #make g_Actuators_Set_apf
-            for Actuator in ArrayList:
-                generated_code_str += f"\t\tACT_{str(Actuator[ACTUATOR_CODE])}_Set,\n"
+                generated_code_str += "\t\t{"
+                generated_code_str += f"ACT_{str(Actuator[ACTUATOR_CODE])}_Cfg"
+                generated_code_str += " " * (SPACE_CST - len(f"\tACT_{str(Actuator[ACTUATOR_CODE])}_Cfg"))
+                generated_code_str += f",ACT_{str(Actuator[ACTUATOR_CODE])}_Set"
+                generated_code_str += " " * (SPACE_CST - len(f"\tACT_{str(Actuator[ACTUATOR_CODE])}_Set"))
+                generated_code_str += f",ACT_{str(Actuator[ACTUATOR_CODE])}_Get"
+                generated_code_str += "},\n"
             generated_code_str += "\t};\n"
             self.line.insert(self.line_start_index + 1, generated_code_str)
             try:

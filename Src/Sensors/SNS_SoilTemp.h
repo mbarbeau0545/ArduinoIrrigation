@@ -68,7 +68,7 @@
     *
     *
     */
-    t_eReturnCode SNS_SoilTemp_Get(t_uint16 *f_value);
+    t_eReturnCode SNS_SoilTemp_Get(t_sint16 *f_value_s16);
 #endif // SENS_SOILTEMP_H_INCLUDED           
 //************************************************************************************
 // End of File

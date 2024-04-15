@@ -67,7 +67,7 @@
     *
     *
     */
-    t_eReturnCode ACT_Cmd_IrrigValve_Get(t_uint16 *f_value);
+    t_eReturnCode ACT_Cmd_IrrigValve_Get(t_sint16 *f_value);
     /**
     *
     *	@brief
@@ -80,7 +80,7 @@
     *
     *
     */
-    t_eReturnCode ACT_Cmd_IrrigValve_Set(t_uint16 f_value);
+    t_eReturnCode ACT_Cmd_IrrigValve_Set(t_sint16 f_value);
 
 #endif // ACT_IRRIGATIONVALVE_H_INCLUDED           
 //************************************************************************************

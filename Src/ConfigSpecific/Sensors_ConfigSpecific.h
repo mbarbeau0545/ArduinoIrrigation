@@ -46,7 +46,45 @@
         t_bool    retVal_b;
 
     }t_uSNS_ReturnGetValue;
+    /**
+    *
+    *	@brief
+    *	@details
+    *
+    *
+    *	@param[in] 
+    *	@param[out]
+    *	 
+    *
+    *
+    */
+    typedef t_eReturnCode (t_cbSNS_cfg)(t_uint8 f_pin, t_eArduino_PinMode);
+    /**
+    *
+    *	@brief
+    *	@details
+    *
+    *
+    *	@param[in] 
+    *	@param[out]
+    *	 
+    *
+    *
+    */
+   typedef t_eReturnCode (t_cbSNS_GetVal)(t_sint16 *f_value_s16);
+   typedef struct 
+   {
+        t_cbSNS_cfg    * SnsCfg_pcb;
+        t_cbSNS_GetVal * SnsGet_pcb;
+   }t_sSNS_SysSnsCfg;
 
+    typedef enum 
+    {
+        SENS_FUNCTION_CFG = 0,
+        SENS_FUNCTION_GET,
+        
+        SENS_FUNCTION_NB,
+    }t_eSNS_Function;
     /* CAUTION : Automatic generated code section: Start */
 	typedef enum {
 		SNS_SOILMOISTURE,
@@ -58,24 +96,22 @@
 		SNS_NUMBER,
 	}t_eSNS_Sensors;
 
-	t_eReturnCode (*g_Sensors_Cfg_apf[SNS_NUMBER])(t_uint8, t_eArduino_PinMode) = {
-		SNS_SoilMoisture_Cfg,
-		SNS_SoilTemp_Cfg,
-		SNS_Soil_pH_Cfg,
-		SNS_AirTemp_Cfg,
-		SNS_AirMoisture_Cfg,
+	static const t_sSNS_SysSnsCfg c_SysSnsCfg_as[SNS_NUMBER] = 
+	{
+		{	SNS_SoilMoisture_Cfg                      	,SNS_SoilMoisture_Get,                          },
+		{	SNS_SoilTemp_Cfg                          	,SNS_SoilTemp_Get,                              },
+		{	SNS_Soil_pH_Cfg                           	,SNS_Soil_pH_Get,                               },
+		{	SNS_AirTemp_Cfg                           	,SNS_AirTemp_Get,                               },
+		{	SNS_AirMoisture_Cfg                       	,SNS_AirMoisture_Get,                           },
 	};
+	/* CAUTION : Automatic generated code section: End */
 
-	t_eReturnCode (*g_Sensors_Get_apf[SNS_NUMBER])(t_uint16 *) = {
-		SNS_SoilMoisture_Get,
-		SNS_SoilTemp_Get,
-		SNS_Soil_pH_Get,
-		SNS_AirTemp_Get,
-		SNS_AirMoisture_Get,
-	};
-    /* CAUTION : Automatic generated code section: End */
 
-    t_uint8 g_SensorsPin_ua[SNS_NUMBER] = {
+
+
+
+
+    static const t_uint8 c_SensorsPin_ua8[SNS_NUMBER] = {
                                            (t_uint8)PIN_SOILMOISTURE,                  //SNS_SOILMOISTURE, 
                                            (t_uint8)PIN_SOILTEMP,                      //SNS_SOILTEMP,
                                            (t_uint8)PIN_SOIL_PH,                       //SNS_SOIL_PH,
@@ -83,7 +119,7 @@
                                            (t_uint8)PIN_AIRMOISTURE,                   //SNS_AIRMOISTURE,   
                                         };
 
-    t_eArduino_PinMode g_Sensors_PinMode_ea[SNS_NUMBER] = {
+    static const t_eArduino_PinMode c_Sensors_PinMode_ea[SNS_NUMBER] = {
                                                     PINMODE_INPUT,                      //SNS_SOILMOISTURE, 
                                                     PINMODE_INPUT,                      //SNS_SOILTEMP,
                                                     PINMODE_INPUT,                      //SNS_SOIL_PH,

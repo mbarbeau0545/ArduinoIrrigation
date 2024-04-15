@@ -80,7 +80,7 @@ t_eReturnCode SNS_AirTemp_Cfg(t_uint8 f_pin_u8, t_eArduino_PinMode f_pinMode_e)
 /*************************
 SNS_AirTemp_Get
 *************************/
-t_eReturnCode SNS_AirTemp_Get(t_uint16 *f_value_u16)
+t_eReturnCode SNS_AirTemp_Get(t_sint16 *f_value_s16)
 {
     t_eReturnCode Ret_e = RC_OK;
     t_float32 valueReceive_f32;
@@ -88,15 +88,15 @@ t_eReturnCode SNS_AirTemp_Get(t_uint16 *f_value_u16)
     {
         Ret_e = RC_ERROR_MODULE_NOT_INITIALIZED;
     }
-    if(f_value_u16 == (t_uint16 *)NULL)
+    if(f_value_s16 == (t_sint16 *)NULL)
     {
         Ret_e = RC_ERROR_PARAM_INVALID;
     }
     if(Ret_e == RC_OK)
     {
-        *f_value_u16 = (t_uint16)0;
+        *f_value_s16 = (t_sint16)0;
         Ret_e = DHT_ReadTemperature(&valueReceive_f32);
-        *f_value_u16 = (t_uint16)valueReceive_f32;
+        *f_value_s16 = (t_sint16)valueReceive_f32;
     }  
     DEBUG_PRINT("RetCode [SNS_AirTemp_Get] :")
     DEBUG_PRINTLN(Ret_e) 

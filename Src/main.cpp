@@ -33,15 +33,15 @@ typedef enum
 
 }t_eMain_ArduinoState;
 
-t_uint16 g_actuators_value_ua[ACT_NUMBER] = {
-    (t_uint16)0,                    // ACT_CMD_IRRIGVALVE
+t_sint16 g_actuatorsValue_sa16[ACT_NUMBER] = {
+    (t_sint16)0,                    // ACT_CMD_IRRIGVALVE
 };
-t_uint16 g_sensors_value_ua[SNS_NUMBER] = {
-    (t_uint16)0,
-    (t_uint16)0,
-    (t_uint16)0,
-    (t_uint16)0,
-    (t_uint16)0,
+t_sint16 g_sensorsValue_sa16[SNS_NUMBER] = {
+    (t_sint16)0,
+    (t_sint16)0,
+    (t_sint16)0,
+    (t_sint16)0,
+    (t_sint16)0,
 };
 t_bool   g_ActuatorsInitialize_b = (t_bool)false;
 t_bool   g_SensorsInitialize_b = (t_bool)false;
@@ -84,7 +84,7 @@ static t_eReturnCode s_Main_SetSNS_ACT_Cfg(void);
  *
  *
  */
-static t_eReturnCode s_Main_SetActuatorsValues(void);
+static t_eReturnCode s_Main_SetActuatorsValues(t_sint16 f_ActuatorsValue_sa16[]);
 /**
  *
  *	@brief      Get Actuators values from Actuator Drivers
@@ -172,7 +172,7 @@ static t_eReturnCode s_Main_SetSNS_ACT_Cfg(void)
     t_uint8 LI_u8;
     for(LI_u8 = 0 ; LI_u8 < SNS_NUMBER && Ret_e == RC_OK ; LI_u8++)
     {
-        Ret_e = (g_Sensors_Cfg_apf[LI_u8])(g_SensorsPin_ua[LI_u8], g_Sensors_PinMode_ea[LI_u8]);
+        Ret_e = (c_SysSnsCfg_as[LI_u8].SnsCfg_pcb)(c_SensorsPin_ua8[LI_u8], c_Sensors_PinMode_ea[LI_u8]);
         if(Ret_e != RC_OK)
         {
             Serial.println("Problem in CfgSensor");
@@ -182,7 +182,7 @@ static t_eReturnCode s_Main_SetSNS_ACT_Cfg(void)
     }
     for(LI_u8 = 0 ; LI_u8 < ACT_NUMBER && Ret_e == RC_OK ; LI_u8++)
     {
-        Ret_e = (g_Actuators_Cfg_apf[LI_u8])(g_ActuatorsPin_ua[LI_u8], g_Actuators_PinMode_ea[LI_u8]);
+        Ret_e = (c_SysActCfg_as[LI_u8].ActCfg_pcb)(c_ActuatorsPin_ua8[LI_u8], c_Actuators_PinMode_ea[LI_u8]);
         if(Ret_e != RC_OK)
         {
             Serial.println("Problem in CfgActuator");
@@ -193,13 +193,17 @@ static t_eReturnCode s_Main_SetSNS_ACT_Cfg(void)
 /****************************
 * s_Main_SetActuatorsValues
 ****************************/
-static t_eReturnCode s_Main_SetActuatorsValues(void)
+static t_eReturnCode s_Main_SetActuatorsValues(t_sint16 f_ActuatorsValue_sa16[])
 {
     t_eReturnCode Ret_e = RC_OK;
     t_uint8 LI_u8;
+    if(f_ActuatorsValue_sa16 == (t_sint16)NULL)
+    {
+        Ret_e = RC_ERROR_PTR_NULL;
+    }
     for(LI_u8 = (t_uint8)0 ; (t_uint8)LI_u8 < ACT_NUMBER && Ret_e == RC_OK; LI_u8++ )
     {
-        Ret_e = g_Actuators_Set_apf[LI_u8](g_actuators_value_ua[LI_u8]);
+        Ret_e = c_SysActCfg_as[LI_u8].ActSetVal_pcb(g_actuatorsValue_sa16[LI_u8]);
     }
     return Ret_e;
 }
@@ -212,7 +216,7 @@ static t_eReturnCode s_Main_GetActuatorsValues(void)
     t_uint8 LI_u8;
     for(LI_u8 = (t_uint8)0 ; (t_uint8)LI_u8 < ACT_NUMBER && Ret_e == RC_OK; LI_u8++ )
     {
-        Ret_e = g_Actuators_Get_apf[LI_u8](&g_sensors_value_ua[LI_u8]);
+        Ret_e = c_SysActCfg_as[LI_u8].ActGetVal_pcb(&g_actuatorsValue_sa16[LI_u8]);
     }
     return Ret_e;
 }
@@ -225,16 +229,14 @@ static t_eReturnCode s_Main_GetSensorsValues(void)
     t_uint8 LI_u8;
     for(LI_u8 = (t_uint8)0 ; (t_uint8)LI_u8 < SNS_NUMBER && Ret_e == RC_OK; LI_u8++ )
     {
-        Ret_e = g_Sensors_Get_apf[LI_u8](&g_sensors_value_ua[LI_u8]);
+        Ret_e = c_SysSnsCfg_as[LI_u8].SnsGet_pcb(&g_sensorsValue_sa16[LI_u8]);
         if(Ret_e != RC_OK)
         {
-            Serial.println("Something's off");
-        }
-        else
-        {
             Serial.print(LI_u8);
-            Serial.println("Continue");
+            Serial.println(": Something's off, RetVal");
+            Serial.println(Ret_e);
         }
+
     }
     return Ret_e;
 }
@@ -263,7 +265,6 @@ void setup()
     attachInterrupt(digitalPinToInterrupt(pinSleepMode_u8),s_Main_WakeUpMode,CHANGE);
     //make all config in once
     t_eReturnCode Ret_e = RC_OK;
-    t_uint8 LI_u8;
     Ret_e = s_Main_SetSNS_ACT_Cfg();
     if(Ret_e == RC_OK)
     {
@@ -317,10 +318,10 @@ void loop()
                     {
                         Serial.print(LI_u8);
                         Serial.print(" : ");
-                        Serial.println(g_sensors_value_ua[LI_u8]);
+                        Serial.println(g_sensorsValue_sa16[LI_u8]);
                     }
                     delay(1000);
-                    g_ArduinoState_e = MAIN_ARDUINO_SLEEP;
+                    g_ArduinoState_e = MAIN_ARDUINO_WAKEUP;
                     break;
                 }
                 case MAIN_ARDUINO_SET_CMD:

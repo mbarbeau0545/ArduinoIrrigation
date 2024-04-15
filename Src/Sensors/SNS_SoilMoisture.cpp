@@ -65,21 +65,21 @@ t_eReturnCode SNS_SoilMoisture_Cfg(t_uint8 f_pin, t_eArduino_PinMode f_Pinmode)
 /*************************
 SNS_SoilMoisture_Get
 *************************/
-t_eReturnCode SNS_SoilMoisture_Get( t_uint16 *f_value_16)
+t_eReturnCode SNS_SoilMoisture_Get( t_sint16 *f_value_s16)
 {
     t_eReturnCode Ret_e = RC_OK;
-    t_uint16 valueReceived_u16;
-    if(f_value_16 == (t_uint16 *)NULL)
+    t_sint16 valueReceived_u16;
+    if(f_value_s16 == (t_sint16 *)NULL)
     {
         Ret_e = RC_ERROR_PARAM_INVALID;
     }
     if(Ret_e == RC_OK)
     {
-        *f_value_16 = (t_uint16)0;
-        valueReceived_u16 = (t_uint16)analogRead((t_uint8)g_SoilMoisture_Pin_u8);   
+        *f_value_s16 = (t_sint16)0;
+        valueReceived_u16 = (t_sint16)analogRead((t_uint8)g_SoilMoisture_Pin_u8);   
         //make % value
         //Serial.println(valueReceived_u16);
-        *f_value_16 = (t_uint16)(valueReceived_u16 / 10);
+        *f_value_s16 = (t_sint16)(valueReceived_u16 / 10);
     }
     return Ret_e;
 

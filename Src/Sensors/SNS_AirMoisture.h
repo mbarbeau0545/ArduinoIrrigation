@@ -68,7 +68,7 @@
     *
     *
     */
-    t_eReturnCode SNS_AirMoisture_Get(t_uint16 *f_value);
+    t_eReturnCode SNS_AirMoisture_Get(t_sint16 *f_value_s16);
 #endif // SNS_AIRMOISTURE_H_INCLUDED           
 //************************************************************************************
 // End of File

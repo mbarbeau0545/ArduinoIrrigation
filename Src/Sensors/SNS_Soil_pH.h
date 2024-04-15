@@ -67,7 +67,7 @@
     *
     *
     */
-    t_eReturnCode SNS_Soil_pH_Get(t_uint16 *f_value);
+    t_eReturnCode SNS_Soil_pH_Get(t_sint16 *f_value_s16);
 #endif // SNS_SOIL_PH_C_INCLUDED           
 //************************************************************************************
 // End of File

@@ -60,7 +60,7 @@
     *
     *
     */
-    t_eReturnCode SNS_SoilMoisture_Get(t_uint16 *f_value_u);
+    t_eReturnCode SNS_SoilMoisture_Get(t_sint16 *f_value_u);
 
     // ********************************************************************
     // *                      Variables

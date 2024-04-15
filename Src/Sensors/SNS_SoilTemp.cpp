@@ -52,7 +52,7 @@ t_eReturnCode SNS_SoilTemp_Cfg(t_uint8 f_pin, t_eArduino_PinMode f_Pinmode)
 /*************************
 SNS_SoilTemp_Get
 *************************/
-t_eReturnCode SNS_SoilTemp_Get(t_uint16 *f_value)
+t_eReturnCode SNS_SoilTemp_Get(t_sint16 *f_value_s16)
 {
     t_eReturnCode Ret_e = RC_OK;
     return Ret_e;
