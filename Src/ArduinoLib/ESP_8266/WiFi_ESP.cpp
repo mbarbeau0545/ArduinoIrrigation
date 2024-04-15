@@ -25,7 +25,8 @@
 #define ESP_EXPECT_DICONNECT        "DISCONNECT"                    // Expected from ESP : "DISCONNECT"
 #define ESP_EXPECT_BUSY             "busy"                          // Expected from ESP : "busy"
 #define ESP_EXPECT_DATA_SEND        "SEND OK"
-
+#define ESP_EXPECT_RCV_DATA         "IPD"
+#define ESP_EXPECT_TCP_CONNECT      "STATUS:3"
 
 #define ESP_TIMEOUT_WRITE (t_uint16)2000                            //Time waiting from ESP doing the cmd 
 #define ESP_TIMEOUT_READ  (t_uint8)75                               //Time waiting from ESP to send info
@@ -47,11 +48,12 @@ t_bool g_ESP_ModemCom_Initialized_b = false;
 
 t_sESP_Cfg g_ESP8266_Info_s = {
         .WifiCfg_s = {
-        .WifiMode_e = ESP_WIFI_MODE_UNDEFINED,
-        .WifiStatus_e = ESP_WIFI_STATUS_DISCONNECTED,
+        .WifiMode_e     = ESP_WIFI_MODE_UNDEFINED,
+        .WifiStatus_e   = ESP_WIFI_STATUS_DISCONNECTED,
     },
-        .ConnectType_e = ESP_CONNECTION_UNKNOWN,  
+        .ConnectType_e  = ESP_CONNECTION_UNKNOWN,  
         .ConnectState_e = ESP_PROTOCOL_STATE_DISCONNECT,                                           //All disable
+        .SleepMode_e    = ESP_SLEEP_UNKNOWN,
     };
 const char *c_WifiCmd_uac[ESP_WIFI_MODE_NB] = {
     CMD_WRITE(_CWMODE)"1",                                                                    //ESP_WIFI_MODE_STATION = 0,
@@ -64,6 +66,12 @@ const char * c_ConnectionCmd_uac[ESP_CONNECTION_NB] = {
     CMD_WRITE(_CIPSTART)"\"UDP\"",                                                            //ESP_CONNECTION_UDP,
     CMD_WRITE(_CIPSTART)"\"SSL\"",                                                            //ESP_CONNECTION_SSL, 
                                                     
+};
+const char * c_sleepModeCmd_ac[ESP_SLEEPMODE_NB] = {
+    CMD_WRITE(_SLEEP)"0",                                                                     //ESP_SLEEPMODE_DISABLE
+    CMD_WRITE(_SLEEP)"1",                                                                     //ESP_SLEEPMODE_LIGHT
+    CMD_WRITE(_SLEEP)"2",  
+    CMD_WRITE(_GSLP),                                                              //ESP_SLEEPMODE_MODEM
 };
 //********************************************************************************
 //                      Local functions - Prototypes
@@ -94,6 +102,19 @@ static t_eReturnCode s_ESP_MakeCommand(const char *f_command_pac, const char * f
 *
 */ 
 static t_eReturnCode s_ESP_MakeCommand_WithResponse(const char *f_command_pac, const char * f_answerExpected_pac, t_uint16 timeOutMs_u16,const char * f_answer_pac);
+/**
+*
+*	@brief
+*	@details
+*
+*
+*	@param[in] 
+*	@param[out]
+*	 
+*
+*
+*/ 
+static t_eReturnCode s_ESP_GetInfo_StateESP(void);
 //******************************************************************************** 
 //                      Public functions - Implementation
 //********************************************************************************
@@ -106,16 +127,13 @@ static t_eReturnCode s_ESP_MakeCommand_WithResponse(const char *f_command_pac, c
     Ret_e = Modem_InitCom(f_baudrate_u32,f_rxPin_u8,f_txPin_u8);
     if(Ret_e == RC_OK)
     {
-        #if !defined(SERIAL_ESP_DEBUG)
         Ret_e = s_ESP_MakeCommand("AT\r\n", ESP_EXPECT_OK, ESP_TIMEOUT_READ);
-        #endif // SERIAL_ESP_DEBUG
         if(Ret_e == RC_OK)
         {
             g_ESP_ModemCom_Initialized_b = (t_bool)true;
-        }
-        
+        }        
     }
-    else if(Ret_e != RC_OK)
+    if(Ret_e != RC_OK)
     {
         Ret_e = RC_ERROR_MODULE_NOT_INITIALIZED;
         g_ESP_ModemCom_Initialized_b = (t_bool)false;
@@ -235,9 +253,9 @@ t_eReturnCode ESP_DisConnectWifi(void)
     }
     return Ret_e;
 }
-/**********************
+/*************************
 * ESP_Start_ProtocolCom  
-***********************/
+*************************/
 t_eReturnCode ESP_Start_ProtocolCom(t_eESP_ConnectionType f_ProtocolCom_Type_e,const char * f_IP_Address_pc, t_uint16 f_port_u16)
 {
     t_eReturnCode Ret_e = RC_OK;
@@ -295,8 +313,8 @@ t_eReturnCode ESP_Close_ProtocolCom(void)
 }
 /******************************
 * ESP_Send_DataWithProtocolCom
-******************************/
-t_eReturnCode ESP_Send_DataWithProtocolCom(t_eESP_SendDataMode f_DataMode_e, const char * f_dataToSend_pc)
+*******************************/
+t_eReturnCode ESP_SendData_WithProtocolCom(t_eESP_ExchangeDataMode f_DataMode_e, const char * f_dataToSend_pc)
 {
     t_eReturnCode Ret_e = RC_OK;
     String dataESpCmd_str;
@@ -315,7 +333,7 @@ t_eReturnCode ESP_Send_DataWithProtocolCom(t_eESP_SendDataMode f_DataMode_e, con
     {
         Ret_e = RC_WARNING_WRONG_CONFIG;
     }
-    if(f_DataMode_e > ESP_SEND_DATA_NB)
+    if(f_DataMode_e > ESP_EXCHANGE_DATA_NB)
     {
         Ret_e = RC_ERROR_PARAM_INVALID;
     }
@@ -325,9 +343,9 @@ t_eReturnCode ESP_Send_DataWithProtocolCom(t_eESP_SendDataMode f_DataMode_e, con
         lenghtData_u16 = dataToSend_str.length();
         switch(f_DataMode_e)
         {
-            case ESP_SEND_DATA_SERIAL:
+            case ESP_EXCHANGE_DATA_SERIAL:
             {
-                //Data sheet say first send Lenght and if esp Repond OK send it DATA
+                //Data sheet say first send Lenght and if esp Repond OK then send it DATA
                 dataESpCmd_str = String(CMD_WRITE(_CIPSEND)) + String(lenghtData_u16) + String("\r\n");
                 ExpectRcvEsp_str = String(lenghtData_u16);
                 Ret_e = s_ESP_MakeCommand(dataESpCmd_str.c_str(), ExpectRcvEsp_str.c_str(), ESP_TIMEOUT_WRITE);
@@ -339,11 +357,11 @@ t_eReturnCode ESP_Send_DataWithProtocolCom(t_eESP_SendDataMode f_DataMode_e, con
                 }
                 break;
             }
-            case ESP_SEND_DATA_HEX:
+            case ESP_EXCHANGE_DATA_HEX:
             {
                 break;
             }
-            case ESP_SEND_DATA_BUFF:
+            case ESP_EXCHANGE_DATA_BUFF:
             {
                 //Datasheet says we cannot use ESP_SEND_DATA_BUFF when SSL is set
                 if(g_ESP8266_Info_s.ConnectType_e == ESP_CONNECTION_SSL)
@@ -357,7 +375,7 @@ t_eReturnCode ESP_Send_DataWithProtocolCom(t_eESP_SendDataMode f_DataMode_e, con
                 
                 break;
             }
-            case ESP_SEND_DATA_NB:
+            case ESP_EXCHANGE_DATA_NB:
             {
                 break;
             }
@@ -368,6 +386,60 @@ t_eReturnCode ESP_Send_DataWithProtocolCom(t_eESP_SendDataMode f_DataMode_e, con
             }
         }
     }
+    DEBUG_PRINT("ESP_SendData_WithProtocolCom retval : ");
+    DEBUG_PRINTLN(Ret_e);
+    return Ret_e;
+}
+/******************************
+* ESP_RcvData_WithProtocolCom
+*******************************/
+t_eReturnCode ESP_RcvData_WithProtocolCom(t_eESP_ExchangeDataMode f_RcvDataMode_e, const char *f_RcvData_pc)
+{
+    t_eReturnCode Ret_e = RC_OK;
+    //t_uint8 LI_u8;
+    char * answerExepctedFind_pc = (char*)NULL;
+    char * checkstrcpy = (char*)NULL;
+    char espResponse_ac[MODEM_MAX_BUFF_SIZE];
+    if(f_RcvData_pc == (const char *)NULL)
+    {
+        Ret_e = RC_ERROR_PTR_NULL;
+    }
+    if(f_RcvDataMode_e > ESP_EXCHANGE_DATA_NB)
+    {
+        Ret_e = RC_ERROR_PARAM_INVALID;
+    }
+    if(g_ESP8266_Info_s.ConnectState_e != ESP_PROTOCOL_STATE_CONNECTED)
+    {
+        Ret_e = RC_WARNING_WRONG_CONFIG;
+    }
+    if(Ret_e == RC_OK)
+    {
+        Ret_e = Modem_ReadBuffer(espResponse_ac);
+        if(Ret_e == RC_OK)
+        {
+            answerExepctedFind_pc = strstr((const char *)espResponse_ac,(const char*)ESP_EXPECT_RCV_DATA);
+            //Serial.println(espResponse_ac);
+            if(answerExepctedFind_pc != (char *)NULL)
+            {
+                Serial.println("Find IPD");
+                checkstrcpy = strcpy((char *)f_RcvData_pc,(const char *)espResponse_ac);
+                if(checkstrcpy != (char *)f_RcvData_pc)
+                {
+                    Ret_e = RC_ERROR_COPY_FAILED;
+                }
+                else 
+                {
+                    Ret_e = RC_OK;
+                }
+            }
+            else
+            {
+                Ret_e = RC_ERROR_WRONG_RESULT;
+            }
+        }
+    }
+    DEBUG_PRINT("ESP_RcvData_WithProtocolCom retval : ");
+    DEBUG_PRINTLN(Ret_e);
     return Ret_e;
 }
 /*************************
@@ -382,7 +454,11 @@ t_eReturnCode ESP_Get_ProtocolCom_Cfg(t_sESP_Cfg *f_ESP_Config_e)
     }
     if(Ret_e == RC_OK)
     {
-        *f_ESP_Config_e = g_ESP8266_Info_s;
+        Ret_e = s_ESP_GetInfo_StateESP();
+        if(Ret_e == RC_OK)
+        {
+            *f_ESP_Config_e = g_ESP8266_Info_s;
+        }        
     }
     DEBUG_PRINT("ESP_GetCfg retval : ");
     DEBUG_PRINTLN(Ret_e);
@@ -406,6 +482,45 @@ t_eReturnCode ESP_GetFirmwareVersion(const char *f_firmwareVersion_pc)
     DEBUG_PRINTLN(Ret_e);
     return Ret_e;
 }
+t_eReturnCode ESP_SetSleepMode(t_eESP_SleepMode f_sleepMode_e, t_uint32 f_timeSleeping_u32)
+{
+    t_eReturnCode Ret_e = RC_OK;
+    String ESP_Cmd_str;
+    if(g_ESP_ModemCom_Initialized_b == (t_bool)false)
+    {
+        Ret_e = RC_ERROR_MODULE_NOT_INITIALIZED;
+    }
+    if(f_sleepMode_e > ESP_SLEEPMODE_NB)
+    {
+        Ret_e = RC_ERROR_NOT_SUPPORTED;
+    }
+    if(Ret_e == RC_OK)
+    {
+        if(g_ESP8266_Info_s.SleepMode_e != f_sleepMode_e)
+        {
+            if(f_sleepMode_e == ESP_SLEEPMODE_TIME)
+            {
+                ESP_Cmd_str = String(c_sleepModeCmd_ac[f_sleepMode_e]) + String(f_timeSleeping_u32) + String("\r\n");
+            }
+            else 
+            {
+                ESP_Cmd_str = String(c_sleepModeCmd_ac[f_sleepMode_e]) + String("\r\n");
+            }
+            Ret_e = s_ESP_MakeCommand(ESP_Cmd_str.c_str(), ESP_EXPECT_OK, ESP_TIMEOUT_READ);
+        }
+        //ESP_SLEEPMODE_TIME is not considered as continuous, once time is out, ESP is no longer with this sleepMode, others are.
+        if(Ret_e == RC_OK && g_ESP8266_Info_s.SleepMode_e != ESP_SLEEPMODE_TIME)
+        {
+            g_ESP8266_Info_s.SleepMode_e = f_sleepMode_e;
+        }
+        else if(Ret_e != RC_OK && g_ESP8266_Info_s.SleepMode_e != ESP_SLEEPMODE_TIME)
+        {
+            g_ESP8266_Info_s.SleepMode_e = ESP_SLEEP_UNKNOWN;
+        }
+    }
+    Serial.println(g_ESP8266_Info_s.SleepMode_e);
+    return Ret_e;
+}
 //********************************************************************************
 //                      Local functions - Implementation
 //********************************************************************************
@@ -416,7 +531,6 @@ static t_eReturnCode s_ESP_MakeCommand(const char *f_command_pac, const char * f
 {
     t_eReturnCode Ret_e = RC_OK;
     t_uint8 LI_u8;
-    t_uint8 maxTryWrite_u8 = ESP_WL_MAX_ATTEMPT_CONNECTION;
     char response_ac[MODEM_MAX_BUFF_SIZE];
     char * answerExepctedFind_pc = (char*)NULL;
     if(f_command_pac == (const char*)NULL || f_answerExpected_pac == (const char*)NULL)
@@ -425,13 +539,14 @@ static t_eReturnCode s_ESP_MakeCommand(const char *f_command_pac, const char * f
     }
     if(Ret_e == RC_OK)
     {
-        for(LI_u8 = 0 ; LI_u8 < maxTryWrite_u8 ; LI_u8++)
+        for(LI_u8 = 0 ; LI_u8 < ESP_WL_MAX_ATTEMPT_CONNECTION ; LI_u8++)
         {
             Ret_e = Modem_Write(f_command_pac);
             delay(timeOutMs_u16);
             if(Ret_e == RC_OK)
             {   
                 Ret_e = Modem_ReadBuffer(response_ac);
+                //Serial.print(response_ac);
                 //see if ESP answer is corresponding with what expected
                 if(Ret_e == RC_OK)
                 {
@@ -443,8 +558,14 @@ static t_eReturnCode s_ESP_MakeCommand(const char *f_command_pac, const char * f
                         
                         Ret_e = Modem_ReadBuffer(response_ac);
                     }
-                    //Serial.println("ReceivedCmd :");
-                    //Serial.println(response_ac);
+                    /*
+                    if(f_command_pac == "None")
+                    {
+                        //Serial.println("ReceivedCmd :");
+                        Serial.println(response_ac);
+                    }
+                    */
+                    
                     if(Ret_e == RC_OK)
                     {
                         answerExepctedFind_pc = (char * )NULL;
@@ -464,7 +585,7 @@ static t_eReturnCode s_ESP_MakeCommand(const char *f_command_pac, const char * f
         }
         //Serial.println(response_ac);
         
-        if(LI_u8 >= maxTryWrite_u8)
+        if(LI_u8 >= ESP_WL_MAX_ATTEMPT_CONNECTION)
         {
           Ret_e = RC_ERROR_LIMIT_REACHED;
         }
@@ -490,14 +611,14 @@ static t_eReturnCode s_ESP_MakeCommand_WithResponse(const char *f_command_pac, c
     }
     if(Ret_e == RC_OK)
     {
-        for(LI_u8 = 0 ; LI_u8 < maxTryWrite_u8 ; LI_u8++)
+        for(LI_u8 = 0 ; LI_u8 < ESP_WL_MAX_ATTEMPT_CONNECTION ; LI_u8++)
         {
             Ret_e = Modem_Write(f_command_pac);
             delay(timeOutMs_u16);
             if(Ret_e == RC_OK)
             {   
                 Ret_e = Modem_ReadBuffer(response_ac);
-                Serial.println(response_ac);
+                //Serial.println(response_ac);
                 //see if ESP answer is corresponding with what expected
                 if(Ret_e == RC_OK)
                 {
@@ -517,7 +638,7 @@ static t_eReturnCode s_ESP_MakeCommand_WithResponse(const char *f_command_pac, c
                         answerExepctedFind_pc = strstr(response_ac, f_answerExpected_pac);
                         if(answerExepctedFind_pc != (char *)NULL)
                         {
-                            Serial.println("find it");
+                            //Serial.println("find it");
                             checkstrcpy = strcpy((char *)f_answer_pac, (const char *)response_ac);
                             if ((char *)checkstrcpy != (char *)f_answer_pac) 
                             {
@@ -538,7 +659,7 @@ static t_eReturnCode s_ESP_MakeCommand_WithResponse(const char *f_command_pac, c
                 }        
             }            
         }
-        Serial.println(LI_u8);
+        //Serial.println(LI_u8);
         if(LI_u8 >= maxTryWrite_u8)
         {
           Ret_e = RC_ERROR_LIMIT_REACHED;
@@ -548,6 +669,48 @@ static t_eReturnCode s_ESP_MakeCommand_WithResponse(const char *f_command_pac, c
     DEBUG_PRINTLN(Ret_e);
     return Ret_e;
 }   
+/********************************
+* s_ESP_GetInfo_StateESP
+********************************/   
+static t_eReturnCode s_ESP_GetInfo_StateESP(void)
+{
+    t_eReturnCode Ret_e = RC_OK;
+    char response_ac[MODEM_MAX_BUFF_SIZE];
+    char *answerExpectedFound_pc;
+    //check Wi-fi connection 
+    Ret_e = s_ESP_MakeCommand_WithResponse(CMD_READ(_CWJAP), ESP_EXPECT_OK, ESP_TIMEOUT_READ,response_ac);
+    if(Ret_e == RC_OK)
+    {
+        //ESP send +CWJAP : "livebox name", "IP address", if Wifi Connected, and NO AP if not 
+        answerExpectedFound_pc = (char *)strstr(response_ac, "CWJAP");
+        if(answerExpectedFound_pc == (char *)NULL)
+        {
+            g_ESP8266_Info_s.WifiCfg_s.WifiStatus_e = ESP_WIFI_STATUS_DISCONNECTED;
+        }
+        else
+        {
+            g_ESP8266_Info_s.WifiCfg_s.WifiStatus_e = ESP_WIFI_STATUS_CONNECTED;
+        }
+        //re-initialiaze data
+        answerExpectedFound_pc = (char *)NULL;
+        memset(response_ac, '\0', sizeof(response_ac));
+        //datasheet say 2 : got IP, 3 : connected, 4 : disconnected, 5 : Wifi connection failed
+        Ret_e = s_ESP_MakeCommand_WithResponse(CMD(_CIPSTATUS), ESP_EXPECT_OK, ESP_TIMEOUT_READ, response_ac);
+        if(Ret_e == RC_OK)
+        {
+            answerExpectedFound_pc = (char *)strstr(response_ac, ESP_EXPECT_TCP_CONNECT);
+            if(answerExpectedFound_pc == (char*)NULL)
+            {
+                g_ESP8266_Info_s.ConnectState_e = ESP_PROTOCOL_STATE_DISCONNECT;
+            }
+            else 
+            {
+                g_ESP8266_Info_s.ConnectState_e = ESP_PROTOCOL_STATE_CONNECTED;
+            }
+        }
+    }
+    return Ret_e;    
+}
 //************************************************************************************
 // End of File
 //************************************************************************************

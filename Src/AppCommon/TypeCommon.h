@@ -7,15 +7,15 @@
  * @date        jj/mm/yyyy
  * @version     1.0
  */
-#ifndef TYPE_COMMON_H_INCLUDED
-#define TYPE_COMMON_H_INCLUDED
- 
+#ifndef TYPECOMMON_H_INCLUDED
+#define TYPECOMMON_H_INCLUDED
     typedef enum
 
     {
 
         // Errors
-
+        RC_ERROR_COPY_FAILED = -16,                      /**< The copy between two variable failed*/
+        RC_ERROR_PTR_NULL = -15,                         /**< At least one of the pointer is null*/
         RC_ERROR_PARAM_INVALID = -14,                   /**< At least one of the parameters is not in the allowed range. */
         RC_ERROR_PARAM_NOT_SUPPORTED = -13,             /**< At lest one of the parameters is not supported. */
         RC_ERROR_WRONG_STATE = -12,                     /**< The function cannot succeed in the current state. */
@@ -61,5 +61,4 @@ typedef float t_float32;                    /**< 32-bit float type. */
 //typedef unsigned long long t_uint64;        /**< Unsigned 64-bit type. */
 //typedef signed long long t_sint64;          /**< Signed 64-bit type. */
 typedef char t_char;
-
-#endif //TYPE_COMMON_H
+#endif //TYPECOMMON_H_INCLUDED

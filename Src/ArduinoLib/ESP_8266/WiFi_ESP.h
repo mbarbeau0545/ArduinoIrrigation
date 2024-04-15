@@ -88,9 +88,9 @@
     }t_sESP_WifiCfg;
     typedef enum 
     {
-        ESP_PROTOCOL_STATE_CONNECTED = 0,
-        ESP_PROTOCOL_STATE_DISCONNECT,
-        ESP_PROTOCOL_STATE_FAILED,
+        ESP_PROTOCOL_STATE_CONNECTED = 0,                   // Protocol communication is connected 
+        ESP_PROTOCOL_STATE_DISCONNECT,                      // Protocol communication is disconnected
+        ESP_PROTOCOL_STATE_FAILED,                          // Try to make protocol communication but failed
         ESP_PROTOCOL_STATE_SYN_SENT,
         ESP_PROTOCOL_STATE_SYN_RCV,
     }t_eESP_ProtocolState;
@@ -105,11 +105,23 @@
         ESP_CONNECTION_UNKNOWN,
    }t_eESP_ConnectionType;
 
+   typedef enum 
+   {
+        ESP_SLEEPMODE_DISABLE = 0,                          // Disable sleep mode, full operational. still responding.
+        ESP_SLEEPMODE_LIGHT,                                // ext/int timers are off but proccessuer still responding. 
+        ESP_SLEEPMODE_MODEM,                                // Modem Wifi is on, but proccess and timer are off,still responding
+        ESP_SLEEPMODE_TIME,                                 // everything is disconnected during an amount of time, not responding until time is out, DEFAULT MODE
+
+        ESP_SLEEPMODE_NB,
+        ESP_SLEEP_UNKNOWN,
+   }t_eESP_SleepMode;
+
     typedef struct 
     {
         t_sESP_WifiCfg        WifiCfg_s;
         t_eESP_ConnectionType ConnectType_e;
-        t_eESP_ProtocolState ConnectState_e;
+        t_eESP_ProtocolState  ConnectState_e;
+        t_eESP_SleepMode      SleepMode_e;
     }t_sESP_Cfg;
 
 
@@ -142,12 +154,12 @@
 
     typedef enum 
     {
-        ESP_SEND_DATA_SERIAL = 0,                   //  transparent transmission mode which require to be single connection mode
-        ESP_SEND_DATA_HEX,                          //  Send data hexadecimal way
-        ESP_SEND_DATA_BUFF,                         // Write data into TCP-send-buffer, This command can NOT be used on SSL connection.
+        ESP_EXCHANGE_DATA_SERIAL = 0,                   //  transparent transmission mode which require to be single connection mode
+        ESP_EXCHANGE_DATA_HEX,                          //  Send data hexadecimal way
+        ESP_EXCHANGE_DATA_BUFF,                         // Write data into TCP-send-buffer, This command can NOT be used on SSL connection.
 
-        ESP_SEND_DATA_NB,
-    }t_eESP_SendDataMode;
+        ESP_EXCHANGE_DATA_NB,
+    }t_eESP_ExchangeDataMode;
     // ********************************************************************
     // *                      Prototypes
     // ********************************************************************
@@ -267,20 +279,27 @@
     *   RC_ERROR_NOT_ALLOWED            : User can not use SendBuf in SSL connection.\n
     *   RC_OK                           : Data send succesfully.\n
     */ 
-    t_eReturnCode ESP_Send_DataWithProtocolCom(t_eESP_SendDataMode f_DataMode_e, const char * f_dataToSend_pc);
+    t_eReturnCode ESP_SendData_WithProtocolCom(t_eESP_ExchangeDataMode f_DataMode_e, const char * f_dataToSend_pc);
     /**
     *
     *	@brief
     *	@details
     *
     *
-    *	@param[in] 
+    *	@param[in] f_RcvDataMode_e : The Rcv mode
+    *	@param[in] f_RcvData_pc    : contain the Rcv msg from Connection 
     *	@param[out]
+    *	RC_ERROR_MODULE_NOT_INITIALIZED : The module was not initialized.\n
+    *   RC_ERROR_PTR_NULL               : At least one of pointor is null.\n
+    *   RC_ERROR_PARAM_INVALID          : f_RcvDataMode_e not allowed.\n
+    *   RC_WARNING_WRONG_CONFIG         : Conexion is not currently estalibished.\n
+    *   RC_ERROR_COPY_FAILED            : Copy into f_RcvData_pc failed
+    *   RC_OK                           : Data receive succesfully.\n
     *	 
     *
     *
     */
-    t_eReturnCode ESP_Rcv_DataWithProtocolCom(t_eESP_SendDataMode f_DataMode_e, const char * f_RcvData_pc);
+    t_eReturnCode ESP_RcvData_WithProtocolCom(t_eESP_ExchangeDataMode f_RcvDataMode_e, const char * f_RcvData_pc);
     /**
     *
     *	@brief
@@ -307,7 +326,19 @@
     *
     */  
     t_eReturnCode ESP_GetFirmwareVersion(const char *f_firmwareVersion_pc);
-
+    /**
+    *
+    *	@brief
+    *	@details
+    *
+    *
+    *	@param[in] 
+    *	@param[out]
+    *	 
+    *
+    *
+    */  
+    t_eReturnCode ESP_SetSleepMode(t_eESP_SleepMode f_sleepMode_e, t_uint32 f_timeSleeping_u32);
 #endif // WIFI_ESP8266_H_INCLUDED           
 //************************************************************************************
 // End of File

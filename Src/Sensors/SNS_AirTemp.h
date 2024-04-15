@@ -25,8 +25,7 @@
     #include "../AppCommon/TypeCommon.h"
 
     #include "../ConfigSpecific/Arduino_ConfigSpecific.h"
-
-    #include "ArduinoLib/DHT.h"
+    #include "../ArduinoLib/DHT/DHT.h"
     #include <Arduino.h>
     // ********************************************************************
     // *                      Types

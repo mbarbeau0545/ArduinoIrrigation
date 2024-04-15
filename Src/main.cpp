@@ -20,7 +20,7 @@
 // ********************************************************************
 // *                      Defines
 // ********************************************************************
-
+#define MAIN_SERIAL_BAUDRATE 115200
 // ********************************************************************
 // *                      Types
 // ********************************************************************
@@ -259,13 +259,7 @@ static t_eReturnCode s_Main_GetTask_FromMaster(void)
 // ********************************************************************
 void setup() 
 {
-    Serial.begin(9600);
-    delay(3000);
-    for (int i = 0; i < digitalPinToInterrupt(20); i++) {
-        if (i != 2) {
-            detachInterrupt(i);
-        }
-    }
+    Serial.begin(MAIN_SERIAL_BAUDRATE);
     attachInterrupt(digitalPinToInterrupt(pinSleepMode_u8),s_Main_WakeUpMode,CHANGE);
     //make all config in once
     t_eReturnCode Ret_e = RC_OK;

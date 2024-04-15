@@ -15,8 +15,6 @@
 #include "Modem.h"
 #include <SoftwareSerial.h>
 #include <stdio.h>
-#define RESULT_OK "OK\r\n"
-#define RESULT_ERROR "ERROR\r\n"
 // ********************************************************************
 // *                      Defines
 // ********************************************************************

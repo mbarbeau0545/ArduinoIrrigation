@@ -34,7 +34,8 @@
     #define _UART                   "+UART"                // sets the UART configuration and writes the new configuration to the flash
     #define _UART_CUR               "+UART_CUR"            //sets the UART configuration and writes the new configuration to the flash
     #define _UART_DEF               "+UART_DEF"            //sets the UART configuration and writes the new configuration to the flash
-    #define _SLPMODE_M              "+SLEEP"               //Enter deep-sleep modeWith mode
+    #define _SLEEP                  "+SLEEP"               //Enter deep-sleep modeWith mode
+    #define _GSLP                   "+GSLP"                // Enter deep sleep mode with time out
     #define _RFPOWER                "+RFPOWER"             //maximum value of RF TX power, range 0 ~ 82, unit:0.25dBm
     #define _RFVDD                  "+RFVDD"               // RF TX power according to VDD33
     #define _CWMODE                 "+CWMODE"              //1-stationmode, 2 SoftAP mode, 3- SOFTAP+Station Mode
