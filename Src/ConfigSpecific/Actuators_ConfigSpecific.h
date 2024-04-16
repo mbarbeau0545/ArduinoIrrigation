@@ -41,7 +41,7 @@
     *
     *
     */
-    typedef t_eReturnCode (t_cbACT_cfg)(t_uint8 f_pin, t_eArduino_PinMode);
+    typedef t_eReturnCode (t_cbACT_cfg)(t_uint8 f_pin_u8, t_eArduino_PinMode f_Pinmode_e);
     /**
     *
     *	@brief
@@ -77,14 +77,6 @@
 
     }t_sACT_SysActCfg;
 
-    typedef enum 
-    {
-        ACT_FUNCTION_CFG = 0,
-        ACT_FUNCTION_SET,
-        ACT_FUNCTION_GET,
-
-        ACT_FUNCTION_NB,
-    }t_eACT_Function;
     /* CAUTION : Automatic generated code section: Start */
 	typedef enum {
 		ACT_CMD_IRRIGVALVE,

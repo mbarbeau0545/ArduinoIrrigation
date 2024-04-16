@@ -44,17 +44,17 @@ t_uint8 g_IrrigValve_Pin_u8 = (t_uint8)0;
 /*************************
 ACT_IrrigValve_Cfg
 *************************/
-t_eReturnCode ACT_Cmd_IrrigValve_Cfg(t_uint8 f_pin, t_eArduino_PinMode f_Pinmode)
+t_eReturnCode ACT_Cmd_IrrigValve_Cfg(t_uint8 f_pin_u8, t_eArduino_PinMode f_Pinmode_e)
 {
     t_eReturnCode Ret_e = RC_OK;
-    if(f_pin < (t_uint8)0 || f_pin > MAX_PIN)
+    if(f_pin_u8 > MAX_PIN)
     {
         Ret_e = RC_ERROR_NOT_ALLOWED;
     }
     if (Ret_e == RC_OK)
     {
-        g_IrrigValve_Pin_u8 = f_pin;
-        pinMode(f_pin, f_Pinmode);
+        g_IrrigValve_Pin_u8 = f_pin_u8;
+        pinMode(f_pin_u8, f_Pinmode_e);
     }    
     return Ret_e;
 }

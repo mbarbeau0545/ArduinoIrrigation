@@ -33,7 +33,7 @@
     #define PIN_AIRTEMP 12
     #define PIN_AIRMOISTURE PIN_AIRTEMP
     #define PIN_SOILMOISTURE A0
-    #define PIN_SOILTEMP 11
+    #define PIN_SOILTEMP 4
     #define PIN_SOIL_PH 5
     
     // ********************************************************************
@@ -78,13 +78,6 @@
         t_cbSNS_GetVal * SnsGet_pcb;
    }t_sSNS_SysSnsCfg;
 
-    typedef enum 
-    {
-        SENS_FUNCTION_CFG = 0,
-        SENS_FUNCTION_GET,
-        
-        SENS_FUNCTION_NB,
-    }t_eSNS_Function;
     /* CAUTION : Automatic generated code section: Start */
 	typedef enum {
 		SNS_SOILMOISTURE,
