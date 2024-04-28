@@ -1,15 +1,15 @@
 /*********************************************************************
- * @file        SNS_Soil_pH.
+ * @file        SNS_SoilMoisture_Carotte.h
  * @brief       Template_BriefDescription.
  * @details     TemplateDetailsDescription.\n
  *
- * @author      xxxxxx
+ * @author      AUDMBA
  * @date        jj/mm/yyyy
  * @version     1.0
  */
   
-#ifndef SNS_SOIL_PH_C_INCLUDED
-#define SNS_SOIL_PH_C_INCLUDED
+#ifndef SNS_SOILMOSTURE_CAROTTE_H_INCLUDED
+#define SNS_SOILMOSTURE_CAROTTE_H_INCLUDED
 
 
 
@@ -21,6 +21,7 @@
     #include "../AppCommon/TypeCommon.h"
 
     #include "../ConfigSpecific/Arduino_ConfigSpecific.h"
+    //#include "../ConfigSpecific/Sensors_ConfigSpecific.h"
 
     #include <Arduino.h>
     // ********************************************************************
@@ -34,41 +35,49 @@
     // ********************************************************************
     // *                      Prototypes
     // ********************************************************************
-        
+    /**
+    *
+    *	@brief
+    *	@details
+    *
+    *
+    *	@param[in] 
+    *	@param[out]
+    *	 
+    *
+    *
+    */
+    t_eReturnCode SNS_SoilMoisture_Carotte_Cfg(t_uint8 f_pin, t_eArduino_PinMode f_Pinmode_e);
+    /**
+    *
+    *	@brief
+    *	@details
+    *
+    *
+    *	@param[in] 
+    *	@param[out]
+    *	 
+    *
+    *
+    */
+    t_eReturnCode SNS_SoilMoisture_Carotte_Get(t_sint16 *f_value_s16);
+
     // ********************************************************************
     // *                      Variables
     // ********************************************************************
     
-    //****************************************************************************
-    //                      Public functions - Prototypes
     //********************************************************************************
-    /**
-    *
-    *	@brief
-    *	@details
-    *
-    *
-    *	@param[in] 
-    *	@param[out]
-    *	 
-    *
-    *
-    */
-    t_eReturnCode SNS_Soil_pH_Cfg(t_uint8 f_pin, t_eArduino_PinMode f_Pinmode);
-    /**
-    *
-    *	@brief
-    *	@details
-    *
-    *
-    *	@param[in] 
-    *	@param[out]
-    *	 
-    *
-    *
-    */
-    t_eReturnCode SNS_Soil_pH_Get(t_sint16 *f_value_s16);
-#endif // SNS_SOIL_PH_C_INCLUDED           
+    //                      Local functions - Prototypes
+    //********************************************************************************
+
+    //****************************************************************************
+    //                      Public functions - Implementation
+    //********************************************************************************
+
+    //********************************************************************************
+    //                      Local functions - Implementation
+    //********************************************************************************
+#endif // SNS_SOILMOSTURE_CAROTTE_H_INCLUDED           
 //************************************************************************************
 // End of File
 //************************************************************************************
@@ -79,8 +88,8 @@
  *	@details
  *
  *
- *	@params[in] 
- *	@params[out]
+ *	@param[in] 
+ *	@param[out]
  *	 
  *
  *

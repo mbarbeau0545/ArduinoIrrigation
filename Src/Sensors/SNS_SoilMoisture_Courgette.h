@@ -1,5 +1,5 @@
 /*********************************************************************
- * @file        Arduino_ConfigSpecific.h
+ * @file        SNS_SoilMoisture_Courgette.h
  * @brief       Template_BriefDescription.
  * @details     TemplateDetailsDescription.\n
  *
@@ -8,8 +8,8 @@
  * @version     1.0
  */
   
-#ifndef ARDUINO_CONFIGSPECIFIC_C_INCLUDED
-#define ARDUINO_CONFIGSPECIFIC_C_INCLUDED
+#ifndef SNS_SOILMOSTURE_COURGETTE_H_INCLUDED
+#define SNS_SOILMOSTURE_COURGETTE_H_INCLUDED
 
 
 
@@ -18,46 +18,50 @@
     // ********************************************************************
     // *                      Includes
     // ********************************************************************
-    
+    #include "../AppCommon/TypeCommon.h"
+
+    #include "../ConfigSpecific/Arduino_ConfigSpecific.h"
+    //#include "../ConfigSpecific/Sensors_ConfigSpecific.h"
+
+    #include <Arduino.h>
     // ********************************************************************
     // *                      Defines
     // ********************************************************************
-    //uncomment next line to make DEBUG MODE OPERATIONNAL
-    //#define DHT_DEBUG
 
-    // Définition des macros pour le débogage
-    #define DEBUG_PRINTER                                                          \
-        Serial /**< Define where debug output will be printed.                       \
-          */
-
-    #ifdef DHT_DEBUG
-    #define DEBUG_PRINT(...)                                                       \
-    { DEBUG_PRINTER.print(__VA_ARGS__); }
-    #define DEBUG_PRINTLN(...)                                                     \
-    { DEBUG_PRINTER.println(__VA_ARGS__); }
-    #else
-    #define DEBUG_PRINT(...)                                                       \
-    {} // Placeholder si le débogage est désactivé
-    #define DEBUG_PRINTLN(...)                                                     \
-    {} // Placeholder si le débogage est désactivé
-    #endif
-
-    #define MAX_PIN 21
     // ********************************************************************
     // *                      Types
     // ********************************************************************
-    typedef enum 
-    {
-        PINMODE_INPUT = 0x00,   // INPUT
-        PINMODE_OUTPUT = 0x01,  // OUTPUT
-        PINMODE_PULLUP = 0x02,  // PULL_UP
 
-        PINMODE_NB,
-    }t_eArduino_PinMode;
     // ********************************************************************
     // *                      Prototypes
     // ********************************************************************
-        
+    /**
+    *
+    *	@brief
+    *	@details
+    *
+    *
+    *	@param[in] 
+    *	@param[out]
+    *	 
+    *
+    *
+    */
+    t_eReturnCode SNS_SoilMoisture_Courgette_Cfg(t_uint8 f_pin, t_eArduino_PinMode f_Pinmode_e);
+    /**
+    *
+    *	@brief
+    *	@details
+    *
+    *
+    *	@param[in] 
+    *	@param[out]
+    *	 
+    *
+    *
+    */
+    t_eReturnCode SNS_SoilMoisture_Courgette_Get(t_sint16 *f_value_s16);
+
     // ********************************************************************
     // *                      Variables
     // ********************************************************************
@@ -66,14 +70,14 @@
     //                      Local functions - Prototypes
     //********************************************************************************
 
-        //****************************************************************************
+    //****************************************************************************
     //                      Public functions - Implementation
     //********************************************************************************
 
     //********************************************************************************
     //                      Local functions - Implementation
     //********************************************************************************
-#endif // ARDUINO_CONFIGSPECIFIC_C_INCLUDED           
+#endif // SNS_SOILMOSTURE_COURGETTE_H_INCLUDED           
 //************************************************************************************
 // End of File
 //************************************************************************************
@@ -84,8 +88,8 @@
  *	@details
  *
  *
- *	@params[in] 
- *	@params[out]
+ *	@param[in] 
+ *	@param[out]
  *	 
  *
  *

@@ -60,7 +60,7 @@ class LoadConfig_FromExcel():
     # __init__
     #--------------------------
     def __init__(self):
-        if(os.path.isfile(EXCEL_PATH) != bool(True)):
+        if(os.path.isfile(EXCEL_PATH) == bool(True)):
             self.excelPath_str = EXCEL_PATH
             self.workbook = None
             self.sheets_astr = ""
@@ -69,6 +69,8 @@ class LoadConfig_FromExcel():
             self.ErasePreviousCode_b = False
             self.ScriptList = {}
             self.line = None
+        else:
+            print("Excel file not found")
     #--------------------------
     # _GetLineToGenerateCode
     #--------------------------        

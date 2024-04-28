@@ -25,7 +25,7 @@
 #define MAIN_SERIAL_BAUDRATE 115200
 #define MAIN_WIFI_RX 11
 #define MAIN_WIFI_TX 10
-#define ARDUINO_WAIT_SERVER 3000
+#define ARDUINO_WAIT_SERVER 1000
 #define ARDUINO_WAIT_CYCLIC 3000
 #define MAIN_ARDUINO_MAX_ERROR 20
 // ********************************************************************
@@ -58,16 +58,18 @@ const char * IP_AUDMBA_Nantes =  "192.168.1.26";*/
 
 /**< Msg configuration*/
 
-const char * c_Arduino_AskCmd_pac = "999";
-const char * c_Arduino_MustSendData_pac = "111";
-const char * c_Arduino_MustCmdRelay_pac = "222";
+const char * c_Arduino_AskCmd_pac             = "999";
+const char * c_Arduino_MustSendData_pac       = "111";
+const char * c_Arduino_MustCmdRelayValues_pac = "222";
+const char * c_Arduino_MustCmdRelayDelay_pac  = "244";
 
 // ********************************************************************
 // *                      Variables
 // ********************************************************************
-
 t_sint16 g_actuatorsValue_sa16[ACT_NUMBER] = {
-    (t_sint16)0,                    // ACT_CMD_IRRIGVALVE
+    (t_sint16)0,                    // ACT_CMD_IRRIGVALVE_TOMATE
+    (t_sint16)0,                    // ACT_CMD_IRRIGVALVE_COURGETTE
+    (t_sint16)0,                    // ACT_CMD_IRRIGVALVE_CAROTTE
 };
 t_sint16 g_sensorsValue_sa16[SNS_NUMBER] = {
     (t_sint16)0,
@@ -327,6 +329,8 @@ static t_eReturnCode s_Logic_Main_Cyclic()
                 delay(3000);
                 Ret_e = s_Main_GetTask_FromMaster(s_ESP_Cfg_s, RcvServerData_ac);
                 Serial.println(Ret_e);
+                Serial.print("Rcv :");
+                Serial.println(RcvServerData_ac);
                 if(Ret_e == RC_OK)
                 {//see if Master wants sensors values or cmd relay 
                     answerExpected_pc = strstr(RcvServerData_ac, c_Arduino_MustSendData_pac);
@@ -336,7 +340,7 @@ static t_eReturnCode s_Logic_Main_Cyclic()
                     }
                     else 
                     {
-                        answerExpected_pc = strstr(RcvServerData_ac, c_Arduino_MustCmdRelay_pac);
+                        answerExpected_pc = strstr(RcvServerData_ac, c_Arduino_MustCmdRelayValues_pac);
                         if(answerExpected_pc != (char *)NULL)
                         {
                             g_ArduinoState_e = MAIN_ARDUINO_MODE_SET_CMD;
@@ -648,7 +652,7 @@ static t_eReturnCode s_Main_ExtractMasterCmd(const char *f_RcvCmdMaster_pac, t_u
         {
             if(f_RcvCmdMaster_pac[LI_u16] == ':')
             {
-                g_actuatorsValue_sa16[counter_u16] = atoi(f_RcvCmdMaster_pac + LI_u16 + 2);
+                g_actuatorsValue_sa16[counter_u16] = atoi(f_RcvCmdMaster_pac + LI_u16 + 1);
                 counter_u16 ++;
             }
             if(counter_u16 > ACT_NUMBER)
@@ -672,6 +676,8 @@ void setup()
     Ret_e = s_Main_SetSNS_ACT_Cfg();
     if(Ret_e == RC_OK)
     {
+        g_SensorsInitialize_b = (t_bool)true;
+        g_ActuatorsInitialize_b = (t_bool)true;
         Serial.println("Cfg Senssor OK.");
         
     }

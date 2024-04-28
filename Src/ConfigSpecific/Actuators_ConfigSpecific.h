@@ -18,14 +18,19 @@
     // ********************************************************************
     // *                      Includes
     // ********************************************************************
-    
-    // ********************************************************************
-    // *                      Defines
-    // ********************************************************************
     #include "Arduino.h"
 
     #include "../AppCommon/TypeCommon.h"
-    #include "../Actuators/ACT_Cmd_IrrigValve.h"
+
+    #include "../Actuators/ACT_Cmd_IrrigValve_Carotte.h"
+    #include "../Actuators/ACT_Cmd_IrrigValve_Courgette.h"
+    #include "../Actuators/ACT_Cmd_IrrigValve_Tomate.h"
+    // ********************************************************************
+    // *                      Defines
+    // ********************************************************************
+    #define PIN_ACT_IRRIGVALVE_TOMATE       7
+    #define PIN_ACT_IRRIGVALVE_COURGETTE    8
+    #define PIN_ACT_IRRIGVALVE_CAROTTE      9
     // ********************************************************************
     // *                      Types
     // ********************************************************************
@@ -79,13 +84,17 @@
 
     /* CAUTION : Automatic generated code section: Start */
 	typedef enum {
-		ACT_CMD_IRRIGVALVE,
+		ACT_CMD_IRRIGVALVE_TOMATE,
+		ACT_CMD_IRRIGVALVE_COURGETTE,
+		ACT_CMD_IRRIGVALVE_CAROTTE,
 
 		ACT_NUMBER,
 	}t_eACT_Actuators;
 	static const t_sACT_SysActCfg c_SysActCfg_as[ACT_NUMBER] = 
 	{
-		{ACT_Cmd_IrrigValve_Cfg                     ,ACT_Cmd_IrrigValve_Set                     ,ACT_Cmd_IrrigValve_Get},
+		{ACT_Cmd_IrrigValve_Tomate_Cfg              ,ACT_Cmd_IrrigValve_Tomate_Set              ,ACT_Cmd_IrrigValve_Tomate_Get},
+		{ACT_Cmd_IrrigValve_Courgette_Cfg           ,ACT_Cmd_IrrigValve_Courgette_Set           ,ACT_Cmd_IrrigValve_Courgette_Get},
+		{ACT_Cmd_IrrigValve_Carotte_Cfg             ,ACT_Cmd_IrrigValve_Carotte_Set             ,ACT_Cmd_IrrigValve_Carotte_Get},
 	};
 	/* CAUTION : Automatic generated code section: End */
     // ********************************************************************
@@ -96,10 +105,11 @@
     // *                      Variables
     // ********************************************************************
     static const t_uint8 c_ActuatorsPin_ua8[ACT_NUMBER] = {
-        12                            //ACT_CMD_IRRIGVALVE
+        PIN_ACT_IRRIGVALVE_TOMATE,                              // ACT_CMD_IRRIGVALVE_TOMATE
+        PIN_ACT_IRRIGVALVE_COURGETTE,                           // ACT_CMD_IRRIGVALVE_COURGETTE
+        PIN_ACT_IRRIGVALVE_CAROTTE,                             // ACT_CMD_IRRIGVALVE_CAROTTE            
     };
-
-    static const t_eArduino_PinMode c_Actuators_PinMode_ea[ACT_NUMBER] = {PINMODE_OUTPUT};
+    static const t_eArduino_PinMode c_Actuators_PinMode_ea[ACT_NUMBER] = {PINMODE_OUTPUT, PINMODE_OUTPUT, PINMODE_OUTPUT};
     
     
     //********************************************************************************

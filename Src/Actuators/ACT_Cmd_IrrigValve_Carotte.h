@@ -1,15 +1,15 @@
 /*********************************************************************
- * @file        SNS_SoilTemp.h
+ * @file        ACT_Cmd_IrrigValve_Carotte.h
  * @brief       Template_BriefDescription.
  * @details     TemplateDetailsDescription.\n
  *
- * @author      xxxxxx
+ * @author      audmba
  * @date        jj/mm/yyyy
  * @version     1.0
  */
   
-#ifndef SENS_SOILTEMP_H_INCLUDED
-#define SENS_SOILTEMP_H_INCLUDED
+#ifndef ACT_CMD_IRRIGVALVE_CAROTTE_H_INCLUDED
+#define ACT_CMD_IRRIGVALVE_CAROTTE_H_INCLUDED
 
 
 
@@ -18,15 +18,15 @@
     // ********************************************************************
     // *                      Includes
     // ********************************************************************
-    
+    #include "AppCommon/TypeCommon.h"
+
+    #include "ConfigSpecific/Arduino_ConfigSpecific.h"
+
+    #include <Arduino.h>
     // ********************************************************************
     // *                      Defines
     // ********************************************************************
-    #include "../AppCommon/TypeCommon.h"
 
-    #include "../ConfigSpecific/Arduino_ConfigSpecific.h"
-
-    #include <Arduino.h>
     // ********************************************************************
     // *                      Types
     // ********************************************************************
@@ -38,10 +38,9 @@
     // ********************************************************************
     // *                      Variables
     // ********************************************************************
-
-
+    
     //****************************************************************************
-    //                      Public functions - Prototype
+    //                      Public functions - Prototypes
     //********************************************************************************
     /**
     *
@@ -55,7 +54,7 @@
     *
     *
     */
-    t_eReturnCode SNS_SoilTemp_Cfg(t_uint8 f_pin, t_eArduino_PinMode f_Pinmode);
+    t_eReturnCode ACT_Cmd_IrrigValve_Carotte_Cfg(t_uint8 f_pin, t_eArduino_PinMode f_Pinmode);
     /**
     *
     *	@brief
@@ -68,8 +67,22 @@
     *
     *
     */
-    t_eReturnCode SNS_SoilTemp_Get(t_sint16 *f_value_s16);
-#endif // SENS_SOILTEMP_H_INCLUDED           
+    t_eReturnCode ACT_Cmd_IrrigValve_Carotte_Set(t_sint16 f_value);
+    /**
+    *
+    *	@brief
+    *	@details
+    *
+    *
+    *	@param[in] 
+    *	@param[out]
+    *	 
+    *
+    *
+    */
+    t_eReturnCode ACT_Cmd_IrrigValve_Carotte_Get(t_sint16 *f_value);
+
+#endif // ACT_CMD_IRRIGVALVE_CAROTTE_H_INCLUDED           
 //************************************************************************************
 // End of File
 //************************************************************************************
