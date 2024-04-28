@@ -30,7 +30,7 @@
     // *                      Defines
     // ********************************************************************
     // if using DHT Sensor, both sensor have the same pin 
-    #define PIN_AIRTEMP 12
+    #define PIN_AIRTEMP 13
     #define PIN_AIRMOISTURE PIN_AIRTEMP
     #define PIN_SOILMOISTURE A0
     #define PIN_SOILTEMP 4
@@ -39,13 +39,6 @@
     // ********************************************************************
     // *                      Types
     // ********************************************************************
-    typedef union 
-    {
-        t_float32 retVal_f32;
-        t_uint16  retVal_u16;
-        t_bool    retVal_b;
-
-    }t_uSNS_ReturnGetValue;
     /**
     *
     *	@brief
@@ -58,7 +51,7 @@
     *
     *
     */
-    typedef t_eReturnCode (t_cbSNS_cfg)(t_uint8 f_pin, t_eArduino_PinMode);
+    typedef t_eReturnCode (t_cbSNS_cfg)(t_uint8 f_pin_u8, t_eArduino_PinMode);
     /**
     *
     *	@brief
@@ -91,11 +84,11 @@
 
 	static const t_sSNS_SysSnsCfg c_SysSnsCfg_as[SNS_NUMBER] = 
 	{
-		{	SNS_SoilMoisture_Cfg                      	,SNS_SoilMoisture_Get,                          },
-		{	SNS_SoilTemp_Cfg                          	,SNS_SoilTemp_Get,                              },
-		{	SNS_Soil_pH_Cfg                           	,SNS_Soil_pH_Get,                               },
-		{	SNS_AirTemp_Cfg                           	,SNS_AirTemp_Get,                               },
-		{	SNS_AirMoisture_Cfg                       	,SNS_AirMoisture_Get,                           },
+		{	SNS_SoilMoisture_Cfg                      	,SNS_SoilMoisture_Get},
+		{	SNS_SoilTemp_Cfg                          	,SNS_SoilTemp_Get},
+		{	SNS_Soil_pH_Cfg                           	,SNS_Soil_pH_Get},
+		{	SNS_AirTemp_Cfg                           	,SNS_AirTemp_Get},
+		{	SNS_AirMoisture_Cfg                       	,SNS_AirMoisture_Get},
 	};
 	/* CAUTION : Automatic generated code section: End */
 
@@ -111,6 +104,7 @@
                                            (t_uint8)PIN_AIRTEMP,                       //SNS_AIRTEMP,
                                            (t_uint8)PIN_AIRMOISTURE,                   //SNS_AIRMOISTURE,   
                                         };
+                                        //10 & 11 already token by Wifi esp
 
     static const t_eArduino_PinMode c_Sensors_PinMode_ea[SNS_NUMBER] = {
                                                     PINMODE_INPUT,                      //SNS_SOILMOISTURE, 

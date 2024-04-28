@@ -49,7 +49,7 @@
 
     #define MODEM_TIMEOUT          10000            /* Maximum time waiting for device to respond*/
     #define MODEM_EXTENDED_TIMEOUT 60000
-    #define MODEM_MAX_BUFF_SIZE    128              /*Max buffer size*/
+    #define MODEM_MAX_BUFF_SIZE    78              /*Max buffer size*/
     // ********************************************************************
     // *                      Types
     // ********************************************************************

@@ -16,7 +16,6 @@
 #                                       IMPORT
 #------------------------------------------------------------------------------
 from TypeCommon import *
-import pandas as pd 
 import openpyxl
 import os
 
@@ -61,27 +60,24 @@ class LoadConfig_FromExcel():
     # __init__
     #--------------------------
     def __init__(self):
-        RC = t_eReturnCode()
-        Ret_e = RC.OK
         if(os.path.isfile(EXCEL_PATH) != bool(True)):
-            Ret_e = RC.ERROR_PARAM_INVALID
-        if(Ret_e == RC.OK):
             self.excelPath_str = EXCEL_PATH
             self.workbook = None
             self.sheets_astr = ""
-            self.lines = None
             self.line_start_index = None
             self.line_end_index = None
             self.ErasePreviousCode_b = False
             self.ScriptList = {}
-            
-        return
+            self.line = None
+    #--------------------------
+    # _GetLineToGenerateCode
+    #--------------------------        
     def _GetLineToGenerateCode(self, f_scriptPath_str):
         self.line_start_index = None
         self.line_end_index = None
         try:
-                with open(f_scriptPath_str, 'r') as file:
-                    self.line = file.readlines()
+            with open(f_scriptPath_str, 'r') as file:
+                self.line = file.readlines()
         except:
             raise Exception("[_GetLineToGenerateCode] : cannot open Script file")
         for index, line in enumerate(self.line):
@@ -111,21 +107,28 @@ class LoadConfig_FromExcel():
                 for cell in line:
                     dataLine_a.append(cell.value)
                 data_Array_a.append(dataLine_a)
-        return data_Array_a        
+        return data_Array_a      
+     #--------------------------
+    # _WriteIntoFile
+    #--------------------------    
+    def _WriteIntoFile(self, f_scriptPath_str:str, f_generatedCode_str:str):
+        
+        if(isinstance(f_scriptPath_str,str) == bool(True)  
+           and os.path.isfile(f_scriptPath_str) == bool(True)):
+            self._GetLineToGenerateCode(f_scriptPath_str)
+            self.line.insert(self.line_start_index + 1, f_generatedCode_str)
+            with open(f_scriptPath_str, "w") as file:
+                file.writelines(self.line)
+        else:
+            raise Exception(f"[_WriteIntoFile] : Param Invalid {f_scriptPath_str}, {f_scriptPath_str}, {f_generatedCode_str}")  
     #--------------------------
     # _GetArray_FromExcel
     #--------------------------
     def _GetArray_FromExcel(self, f_ArrayName_str):
-        RC = t_eReturnCode()
-        Ret_e = RC.OK
-        if(isinstance(f_ArrayName_str,str) != bool(True)):
-            Ret_e = RC.ERROR_PARAM_INVALID
-            raise Exception("[GetArray_FromExcel] : param invalid")
-        if(Ret_e ==RC.OK):
-            getArray_a = None
+        getArray_a = None
+        if(isinstance(f_ArrayName_str,str) == bool(True)):
             self.workbook = openpyxl.load_workbook(EXCEL_PATH, data_only=True)
             self.sheets_astr = self.workbook.sheetnames
-
             for sheetName_str in self.sheets_astr:
                 sheet = self.workbook[sheetName_str]
                 for array in sheet.tables.values():
@@ -134,113 +137,79 @@ class LoadConfig_FromExcel():
                             getArray_a =  (self._Extract_DataArray(sheet[array.ref]))
                         except:
                             raise Exception("[GetArray_FromExcel] : Cannot extract array from Excel")
-
         return getArray_a  
-    def MakeSensorsfiles_fromExcel(self) -> t_eReturnCode:
-        RC = t_eReturnCode()
-        Ret_e = RC.OK
+    def MakeSensorsfiles_fromExcel(self):
         ArrayList = None
         generated_code_str = ""
         if(os.path.isfile(EXCEL_PATH) != bool(True) and
            os.path.isfile(SENSORS_CONFIGSPECIFIC_PATH) != bool(True)):
-            Ret_e = RC.ERROR_NOT_SUPPORTED
+            raise Exception("[MakeSensorsfiles_fromExcel] -> Invalid Path")
         ArrayList = self._GetArray_FromExcel(SENSORS_ARRAY_NAME)
         if(ArrayList == None):
-            Ret_e = RC.ERROR_MISSING_CONFIG
-        if(Ret_e == RC.OK):
-            self._GetLineToGenerateCode(SENSORS_CONFIGSPECIFIC_PATH)
-            generated_code_str = "\ttypedef enum {\n"
-            #make enum
-            for Sensor in ArrayList:
-                generated_code_str += f"\t\tSNS_{str(Sensor[SENSOR_CODE]).upper()},\n"
-            generated_code_str += "\n\t\tSNS_NUMBER,\n"
-            generated_code_str += "\t}t_eSNS_Sensors;\n\n"
-            #make c_SysActCfg_as 
-            generated_code_str += "\tstatic const t_sSNS_SysSnsCfg c_SysSnsCfg_as[SNS_NUMBER] = \n\t{\n"
-            #make c_SysActCfg_as 
-            for Sensor in ArrayList:
-                generated_code_str += "\t\t{"
-                generated_code_str += f"\tSNS_{str(Sensor[SENSOR_CODE])}_Cfg"
-                generated_code_str += " " * (SPACE_CST - len(f"\tSNS_{str(Sensor[SENSOR_CODE])}_Cfg,"))
-                generated_code_str += f"\t,SNS_{str(Sensor[SENSOR_CODE])}_Get,"
-                generated_code_str += " " *(SPACE_CST - len(f"\tSNS_{str(Sensor[SENSOR_CODE])},")) 
-                generated_code_str += "},\n"
-            generated_code_str += "\t};\n" 
-            self.line.insert(self.line_start_index + 1, generated_code_str)      
-            try:
-                with open(SENSORS_CONFIGSPECIFIC_PATH, "w") as file:
-                    file.writelines(self.line)
-            except:
-                raise Exception (f"[MakeSensorsfiles_fromExcel] : cannot open file {SENSORS_CONFIGSPECIFIC_PATH}")
-            #create Files for make function 
-            for Sensor in ArrayList:
-                if(os.path.isfile(f"{DRIVERS_SENSORS_FOLDER_PATH}/SNS_{str(Sensor[SENSOR_CODE])}.cpp") == bool(False) and
-                   os.path.isfile(f"{DRIVERS_SENSORS_FOLDER_PATH}/SNS_{str(Sensor[SENSOR_CODE])}.h") == bool(False)):
-                    try:
-                        open(f"{DRIVERS_SENSORS_FOLDER_PATH}/SNS_{str(Sensor[SENSOR_CODE])}.cpp", "w")
-                        open(f"{DRIVERS_SENSORS_FOLDER_PATH}/SNS_{str(Sensor[SENSOR_CODE])}.h", "w")
-                    except:
-                        raise Exception (f"[MakeSensorsfiles_fromExcel] : cannot open file {DRIVERS_SENSORS_FOLDER_PATH}")
-        return Ret_e
+            raise Exception("[MakeSensorsfiles_fromExcel] -> Array is empty")
+        generated_code_str = "\ttypedef enum {\n"
+        #make enum
+        for Sensor in ArrayList:
+            generated_code_str += f"\t\tSNS_{str(Sensor[SENSOR_CODE]).upper()},\n"
+        generated_code_str += "\n\t\tSNS_NUMBER,\n"
+        generated_code_str += "\t}t_eSNS_Sensors;\n\n"
+        #make c_SysActCfg_as 
+        generated_code_str += "\tstatic const t_sSNS_SysSnsCfg c_SysSnsCfg_as[SNS_NUMBER] = \n\t{\n"
+        #make c_SysActCfg_as 
+        for Sensor in ArrayList:
+            generated_code_str += "\t\t{"
+            generated_code_str += f"\tSNS_{str(Sensor[SENSOR_CODE])}_Cfg"
+            generated_code_str += " " * (SPACE_CST - len(f"\tSNS_{str(Sensor[SENSOR_CODE])}_Cfg,"))
+            generated_code_str += f"\t,SNS_{str(Sensor[SENSOR_CODE])}_Get"
+            generated_code_str += "},\n"
+        generated_code_str += "\t};\n" 
+        self._WriteIntoFile(SENSORS_CONFIGSPECIFIC_PATH, generated_code_str)
+        #create Files for make function 
+        for Sensor in ArrayList:
+            if(os.path.isfile(f"{DRIVERS_SENSORS_FOLDER_PATH}/SNS_{str(Sensor[SENSOR_CODE])}.cpp") == bool(False) and
+                os.path.isfile(f"{DRIVERS_SENSORS_FOLDER_PATH}/SNS_{str(Sensor[SENSOR_CODE])}.h") == bool(False)):
+                try:
+                    open(f"{DRIVERS_SENSORS_FOLDER_PATH}/SNS_{str(Sensor[SENSOR_CODE])}.cpp", "w")
+                    open(f"{DRIVERS_SENSORS_FOLDER_PATH}/SNS_{str(Sensor[SENSOR_CODE])}.h", "w")
+                except:
+                    raise Exception (f"[MakeSensorsfiles_fromExcel] : cannot open file {DRIVERS_SENSORS_FOLDER_PATH}")
+        return
     def MakeActuatorsFiles_fromExcel(self):
-        RC = t_eReturnCode()
-        Ret_e = RC.OK
         ArrayList = None
         generated_code_str = ""
         if(os.path.isfile(EXCEL_PATH) != bool(True) and
            os.path.isfile(ACTUATORS_CONFIGSPECIFIC_PATH) != bool(True)):
-            Ret_e = RC.ERROR_NOT_SUPPORTED
+            raise Exception("[MakeActuatorsFiles_fromExcel] -> Invalid Path")
         ArrayList = self._GetArray_FromExcel(ACTUATORS_NAME_ARRAY)
         if(ArrayList == None):
-            Ret_e = RC.ERROR_MISSING_CONFIG
-        if(Ret_e == RC.OK):
-            self._GetLineToGenerateCode(ACTUATORS_CONFIGSPECIFIC_PATH)
-            generated_code_str = "\ttypedef enum {\n"
-            for Actuator in ArrayList:
-                generated_code_str += f"\t\tACT_{str(Actuator[ACTUATOR_CODE]).upper()},\n"
-            generated_code_str += "\n\t\tACT_NUMBER,\n"
-            generated_code_str += "\t}t_eACT_Actuators;\n"
-            generated_code_str += "\tstatic const t_sACT_SysActCfg c_SysActCfg_as[ACT_NUMBER] = \n\t{\n"
-            #make c_SysActCfg_as 
-            for Actuator in ArrayList:
-                generated_code_str += "\t\t{"
-                generated_code_str += f"ACT_{str(Actuator[ACTUATOR_CODE])}_Cfg"
-                generated_code_str += " " * (SPACE_CST - len(f"\tACT_{str(Actuator[ACTUATOR_CODE])}_Cfg"))
-                generated_code_str += f",ACT_{str(Actuator[ACTUATOR_CODE])}_Set"
-                generated_code_str += " " * (SPACE_CST - len(f"\tACT_{str(Actuator[ACTUATOR_CODE])}_Set"))
-                generated_code_str += f",ACT_{str(Actuator[ACTUATOR_CODE])}_Get"
-                generated_code_str += "},\n"
-            generated_code_str += "\t};\n"
-            self.line.insert(self.line_start_index + 1, generated_code_str)
-            try:
-                with open(ACTUATORS_CONFIGSPECIFIC_PATH, "w") as file:
-                    file.writelines(self.line)
-            except:
-                raise Exception (f"[MakeSensorsfiles_fromExcel] : cannot open file {ACTUATORS_CONFIGSPECIFIC_PATH}")
-            for Actuator in ArrayList:
-                if(os.path.isfile(f"{DRIVERS_ACTUATORS_FOLDER_PATH}/ACT_{str(Actuator[ACTUATOR_CODE])}.cpp") == bool(False) and
-                   os.path.isfile(f"{DRIVERS_ACTUATORS_FOLDER_PATH}/ACT_{str(Actuator[ACTUATOR_CODE])}.h") == bool(False)):
-                    try:
-                        open(f"{DRIVERS_ACTUATORS_FOLDER_PATH}/ACT_{str(Actuator[ACTUATOR_CODE])}.cpp", "w")
-                        open(f"{DRIVERS_ACTUATORS_FOLDER_PATH}/ACT_{str(Actuator[ACTUATOR_CODE])}.h", "w")
-                    except:
-                        raise Exception (f"[MakeActuatorsfiles_fromExcel] : cannot open file {DRIVERS_ACTUATORS_FOLDER_PATH}")
-            return Ret_e
-            
+            raise Exception("[MakeActuatorsFiles_fromExcel] -> Array empty")
 
-
-
-
-
-
-
-        
-
-
-    
-            
-            
-        
+        generated_code_str = "\ttypedef enum {\n"
+        for Actuator in ArrayList:
+            generated_code_str += f"\t\tACT_{str(Actuator[ACTUATOR_CODE]).upper()},\n"
+        generated_code_str += "\n\t\tACT_NUMBER,\n"
+        generated_code_str += "\t}t_eACT_Actuators;\n"
+        generated_code_str += "\tstatic const t_sACT_SysActCfg c_SysActCfg_as[ACT_NUMBER] = \n\t{\n"
+        #make c_SysActCfg_as 
+        for Actuator in ArrayList:
+            generated_code_str += "\t\t{"
+            generated_code_str += f"ACT_{str(Actuator[ACTUATOR_CODE])}_Cfg"
+            generated_code_str += " " * (SPACE_CST - len(f"\tACT_{str(Actuator[ACTUATOR_CODE])}_Cfg"))
+            generated_code_str += f",ACT_{str(Actuator[ACTUATOR_CODE])}_Set"
+            generated_code_str += " " * (SPACE_CST - len(f"\tACT_{str(Actuator[ACTUATOR_CODE])}_Set"))
+            generated_code_str += f",ACT_{str(Actuator[ACTUATOR_CODE])}_Get"
+            generated_code_str += "},\n"
+        generated_code_str += "\t};\n"
+        self._WriteIntoFile(ACTUATORS_CONFIGSPECIFIC_PATH, generated_code_str)
+        for Actuator in ArrayList:
+            if(os.path.isfile(f"{DRIVERS_ACTUATORS_FOLDER_PATH}/ACT_{str(Actuator[ACTUATOR_CODE])}.cpp") == bool(False) and
+                os.path.isfile(f"{DRIVERS_ACTUATORS_FOLDER_PATH}/ACT_{str(Actuator[ACTUATOR_CODE])}.h") == bool(False)):
+                try:
+                    open(f"{DRIVERS_ACTUATORS_FOLDER_PATH}/ACT_{str(Actuator[ACTUATOR_CODE])}.cpp", "w")
+                    open(f"{DRIVERS_ACTUATORS_FOLDER_PATH}/ACT_{str(Actuator[ACTUATOR_CODE])}.h", "w")
+                except:
+                    raise Exception (f"[MakeActuatorsfiles_fromExcel] : cannot open file {DRIVERS_ACTUATORS_FOLDER_PATH}")
+        return
 #------------------------------------------------------------------------------
 #                              FUNCTION DECLARATION
 #------------------------------------------------------------------------------
@@ -249,11 +218,8 @@ class LoadConfig_FromExcel():
 #                             FUNCTION IMPLMENTATION
 #------------------------------------------------------------------------------
 def main()-> None:
-    RC = t_eReturnCode()
-    Ret_e = RC.OK
     Load = LoadConfig_FromExcel()
-    Ret_e =  Load.MakeSensorsfiles_fromExcel()
-    print(Ret_e)
+    Load.MakeSensorsfiles_fromExcel()
     Load.MakeActuatorsFiles_fromExcel()
 #------------------------------------------------------------------------------
 #			                MAIN

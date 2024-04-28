@@ -421,7 +421,7 @@ t_eReturnCode ESP_RcvData_WithProtocolCom(t_eESP_ExchangeDataMode f_RcvDataMode_
             //Serial.println(espResponse_ac);
             if(answerExepctedFind_pc != (char *)NULL)
             {
-                Serial.println("Find IPD");
+                //Serial.println("Find IPD");
                 checkstrcpy = strcpy((char *)f_RcvData_pc,(const char *)espResponse_ac);
                 if(checkstrcpy != (char *)f_RcvData_pc)
                 {
