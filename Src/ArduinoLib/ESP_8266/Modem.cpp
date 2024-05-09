@@ -67,6 +67,7 @@ t_eReturnCode Modem_InitCom(t_uint32 f_baudrate_u32, t_uint8 f_rxPin_u8, t_uint8
 void Modem_EndCom(void)
 {
     g_esp8266Serial_pcl->end();
+    g_Modem_Initialized_b = (t_bool)false;
     delete g_esp8266Serial_pcl;
     DEBUG_PRINTLN("Modem-EndCom done.");
 }
@@ -148,16 +149,25 @@ t_eReturnCode Modem_ReadBuffer(const char *f_rxBuffer_pc) {
             }
             else
             {
-                rcvData_c = g_esp8266Serial_pcl->read();
-                RcvResponse_str += rcvData_c;
+                rcvData_c = (char)g_esp8266Serial_pcl->read();
+                //Serial.print(rcvData_c);
+                RcvResponse_str += String((char)rcvData_c);
+                //essaisResponse[index_u8++] = (char)rcvData_c;
+                //rcvData_c = (char)' ';
             }
+            delay(5);
         }
-        RcvResponse_str += "\r\n";
+        //RcvResponse_str += "\r\n";
         //Affichage de la réponse en tant que chaîne UTF-8
+        //Serial.print("rcv :");
+        //RcvResponse_str += String("\n");
+        //Serial.println(RcvResponse_str);
+        //RcvResponse_str = String(essaisResponse)
         //DEBUG_PRINT("Modem-RCVresponse: ");
         //DEBUG_PRINTLN(RcvResponse.c_str());
-        if (Ret_e == RC_OK && RcvResponse_str.length() > 0) 
+        if (Ret_e == RC_OK && RcvResponse_str.length() > (t_uint32)0) 
         {
+            RcvResponse_str += "\r\n";
             RcvResponse_ac = (const char *)RcvResponse_str.c_str();
             // Copie de la réponse dans le tampon de sortie
             checkmemcpy = strcpy((char *)f_rxBuffer_pc, (const char *)RcvResponse_ac);
@@ -165,6 +175,10 @@ t_eReturnCode Modem_ReadBuffer(const char *f_rxBuffer_pc) {
             {
                 Ret_e = RC_ERROR_COPY_FAILED;
             }
+        }
+        else
+        {
+            Ret_e = RC_WARNING_NO_OPERATION;
         }
     }
     g_esp8266Serial_pcl->flush(); // Vider le tampon de réception

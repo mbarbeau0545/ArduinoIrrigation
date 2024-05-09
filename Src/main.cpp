@@ -22,12 +22,17 @@
 // ********************************************************************
 // *                      Defines
 // ********************************************************************
-#define MAIN_SERIAL_BAUDRATE 115200
+#define MAIN_SERIAL_BAUDRATE 9600
+#define ESP_SERIAL_BAUDRATE 115200
 #define MAIN_WIFI_RX 11
 #define MAIN_WIFI_TX 10
-#define ARDUINO_WAIT_SERVER 1000
-#define ARDUINO_WAIT_CYCLIC 3000
+#define ARDUINO_WAIT_SERVER 5000
+#define ARDUINO_WAIT_CYCLIC 1000
 #define MAIN_ARDUINO_MAX_ERROR 20
+
+#define MAIN_CHECK_CONNECT_STATUE 70000
+
+#define SEC_IN_MIN 60
 // ********************************************************************
 // *                      Types
 // ********************************************************************
@@ -37,7 +42,9 @@ typedef enum
     MAIN_ARDUINO_MODE_WAKEUP,
     MAIN_ARDUINO_MODE_ASK_TASK,
     MAIN_ARDUINO_MODE_SEND_SENSORS_VALUES,
-    MAIN_ARDUINO_MODE_SET_CMD,
+    MAIN_ARDUINO_MODE_RCV_ACTUATORS_DATAS,
+    MAIN_ARDUINO_MODE_SET_ACTUATORS,
+    MAIN_ARDUINO_MODE_CHECK_ACT_DURATION,
 
 }t_eMain_ArduinoState;
 
@@ -58,10 +65,12 @@ const char * IP_AUDMBA_Nantes =  "192.168.1.26";*/
 
 /**< Msg configuration*/
 
-const char * c_Arduino_AskCmd_pac             = "999";
-const char * c_Arduino_MustSendData_pac       = "111";
-const char * c_Arduino_MustCmdRelayValues_pac = "222";
-const char * c_Arduino_MustCmdRelayDelay_pac  = "244";
+const char * c_Arduino_AskCmd_pac               = "999";
+const char * c_Arduino_MustSendData_pac         = "111";
+const char * c_Arduino_SendData_pac             = "144";
+const char * c_Arduino_SetActuators_pac         = "200";
+const char * c_Arduino_RcvActuatorsValues_pac   = "222";
+const char * c_Arduino_RcvActuatorsDuration_pac = "244";
 
 // ********************************************************************
 // *                      Variables
@@ -71,9 +80,15 @@ t_sint16 g_actuatorsValue_sa16[ACT_NUMBER] = {
     (t_sint16)0,                    // ACT_CMD_IRRIGVALVE_COURGETTE
     (t_sint16)0,                    // ACT_CMD_IRRIGVALVE_CAROTTE
 };
+t_sint16 g_actuatorsDuration_sa16[ACT_NUMBER] = {
+
+    (t_sint16)0,                    // ACT_CMD_IRRIGVALVE_TOMATE
+    (t_sint16)0,                    // ACT_CMD_IRRIGVALVE_COURGETTE
+    (t_sint16)0,                    // ACT_CMD_IRRIGVALVE_CAROTTE
+};
 t_sint16 g_sensorsValue_sa16[SNS_NUMBER] = {
-    (t_sint16)0,
-    (t_sint16)0,
+    //(t_sint16)0,
+    //I(t_sint16)0,
     (t_sint16)0,
     (t_sint16)0,
     (t_sint16)0,
@@ -111,7 +126,7 @@ static t_eReturnCode s_Main_SetSNS_ACT_Cfg(void);
  *
  *
  */
-static t_eReturnCode s_Main_SetActuatorsValues(void);
+static t_eReturnCode s_Main_SetActuatorsValues(t_sint16 f_ActuatorsContainer_as16[]);
 /**
  *
  *	@brief      Get Actuators values from Actuator Drivers
@@ -124,7 +139,7 @@ static t_eReturnCode s_Main_SetActuatorsValues(void);
  *
  *
  */
-static t_eReturnCode s_Main_GetActuatorsValues(void);
+static t_eReturnCode s_Main_GetActuatorsValues(t_sint16 f_ActuatorsContainer_as16[]);
 /**
  *
  *	@brief      Get Sensors values from Captor Drivers
@@ -137,20 +152,7 @@ static t_eReturnCode s_Main_GetActuatorsValues(void);
  *
  *
  */
-static t_eReturnCode s_Main_GetSensorsValues(void);
-/**
- *
- *	@brief      Send Sensors Values to Master 
- *	@details
- *
- *
- *	@param[in] 
- *	@param[out]
- *	 
- *
- *
- */
-static t_eReturnCode s_Main_SendSensorsValues(void);
+static t_eReturnCode s_Main_GetSensorsValues(t_sint16 f_SensorsContainer_as16[]);
 /**
  *
  *	@brief      Receive and Schedule the receive Task
@@ -163,20 +165,7 @@ static t_eReturnCode s_Main_SendSensorsValues(void);
  *
  *
  */
-static t_eReturnCode s_Main_GetTask_FromMaster(void);
-/**
- *
- *	@brief      Receive and Schedule the receive Task
- *	@details
- *
- *
- *	@param[in] 
- *	@param[out]
- *	 
- *
- *
- */
-static t_eReturnCode s_Logic_Main_Cyclic();
+static t_eReturnCode s_Logic_Main_Cyclic(void);
 /**
  *
  *	@brief      Receive and Schedule the receive Task
@@ -255,7 +244,7 @@ static t_eReturnCode s_Main_GetTask_FromMaster(t_sESP_Cfg f_ESP_Wifi_Cfg_ps, con
  *
  *
  */
-static t_eReturnCode s_Main_ExtractMasterCmd(const char *f_RcvCmdMaster_pac, t_uint16 f_bufferSize_u16);
+static t_eReturnCode s_Main_ExtractMasterCmd(const char *f_RcvCmdMaster_pac, t_uint16 f_bufferSize_u16, t_sint16 f_container_sa16[]);
 // ***************************************************************************
 // *                      Class declaration
 // ***************************************************************************
@@ -280,18 +269,27 @@ static t_eReturnCode s_Logic_Main_Cyclic()
         .SleepMode_e    = ESP_SLEEP_UNKNOWN,
     };
     static t_uint8 s_ctr_FailedConnexion_u8 = (t_uint8)0;
+    static t_uint32 s_actualTime_CoStatue_u32 = millis();
+    static t_uint32 s_actualTime_ActDuration_u32;
+    static t_uint8 s_ctr_IrrigValve_Off_u8 = (t_uint8)0; 
     char RcvServerData_ac[MODEM_MAX_BUFF_SIZE];
     char * answerExpected_pc = NULL;
     String sendDataToMaster_str = "";
     String RcvMasterCmd_str= "";
     t_uint8 LI_u8 = (t_uint8)0;
-    if(g_SensorsInitialize_b != (t_bool)true ||g_ActuatorsInitialize_b != (t_bool)true)
+    static t_bool s_checkTimeDuration_b = (t_bool)false;
+    if(g_SensorsInitialize_b != (t_bool)true || g_ActuatorsInitialize_b != (t_bool)true)
     {
         Ret_e = RC_ERROR_MODULE_NOT_INITIALIZED;
     }
     if(Ret_e == RC_OK)
     {
-
+        // check if we have to actualize WifiStatue & Protocol statue
+        /*Serial.println("here");
+        if((millis()  - s_actualTime_CoStatue_u32) > (t_uint32)MAIN_CHECK_CONNECT_STATUE)
+        {
+            Ret_e = ESP_Get_ProtocolCom_Cfg(&s_ESP_Cfg_s);
+        }*/
         switch(g_ArduinoState_e)
         {
             case MAIN_ARDUINO_MODE_WAKEUP:
@@ -326,7 +324,6 @@ static t_eReturnCode s_Logic_Main_Cyclic()
             {
                 s_Main_ResetBuffer(RcvServerData_ac, MODEM_MAX_BUFF_SIZE);
                 Serial.print("Set task");
-                delay(3000);
                 Ret_e = s_Main_GetTask_FromMaster(s_ESP_Cfg_s, RcvServerData_ac);
                 Serial.println(Ret_e);
                 Serial.print("Rcv :");
@@ -336,17 +333,19 @@ static t_eReturnCode s_Logic_Main_Cyclic()
                     answerExpected_pc = strstr(RcvServerData_ac, c_Arduino_MustSendData_pac);
                     if(answerExpected_pc != (char *)NULL)
                     {
+                        Serial.print("Send sensors values");
                         g_ArduinoState_e = MAIN_ARDUINO_MODE_SEND_SENSORS_VALUES;
                     }
-                    else 
+                    else
                     {
-                        answerExpected_pc = strstr(RcvServerData_ac, c_Arduino_MustCmdRelayValues_pac);
+                        answerExpected_pc = strstr(RcvServerData_ac, c_Arduino_SetActuators_pac);
                         if(answerExpected_pc != (char *)NULL)
                         {
-                            g_ArduinoState_e = MAIN_ARDUINO_MODE_SET_CMD;
+                            g_ArduinoState_e = MAIN_ARDUINO_MODE_RCV_ACTUATORS_DATAS;
                         }
                         else 
                         {
+                            Serial.print("Set cmd check");
                             Serial.println(RcvServerData_ac);
                             Serial.println("Cmd Server not found");
                             s_ctr_FailedConnexion_u8 += 1;
@@ -361,18 +360,109 @@ static t_eReturnCode s_Logic_Main_Cyclic()
                 }
                 break;
             }
-            case MAIN_ARDUINO_MODE_SEND_SENSORS_VALUES:
-            {//IF here send sensors values and go to sleep or make other things
-                //Serial.println("Get sensor value");
-                Ret_e = s_Main_GetSensorsValues();
-                /*for(LI_u8 = (t_uint8)0 ; LI_u8 < (t_uint8)SNS_NUMBER ; LI_u8++)
-                {
-                    Serial.print(LI_u8);
-                    Serial.print(" : ");
-                    Serial.println(g_sensorsValue_sa16[LI_u8]);
-                }*/
+            case MAIN_ARDUINO_MODE_RCV_ACTUATORS_DATAS:
+            {
+                Ret_e = ESP_SendData_WithProtocolCom(ESP_EXCHANGE_DATA_SERIAL, c_Arduino_RcvActuatorsValues_pac);
                 if(Ret_e == RC_OK)
                 {
+                    Serial.println("Wait for Actuators value ");
+                    delay(ARDUINO_WAIT_SERVER);
+                    Ret_e = ESP_RcvData_WithProtocolCom(ESP_EXCHANGE_DATA_SERIAL,RcvServerData_ac);
+                    // chekc if ID correspond to what exepected i.e. the actuators values
+                    answerExpected_pc = strstr(RcvServerData_ac, c_Arduino_RcvActuatorsValues_pac);
+                    if(answerExpected_pc != (char *)NULL)
+                    {// we rcv actuatorsd values
+                        // check here
+                        Serial.print("Exctraction actuators value");
+                        Ret_e = s_Main_ExtractMasterCmd((const char *)RcvServerData_ac, (t_uint16)strlen(RcvServerData_ac),g_actuatorsValue_sa16);
+                        Serial.println(Ret_e);
+                        if(Ret_e == RC_OK)
+                        {// we now receive Actuators duration
+                            s_Main_ResetBuffer(RcvServerData_ac,MODEM_MAX_BUFF_SIZE);
+                            answerExpected_pc = (char *)NULL;
+                            Ret_e = ESP_SendData_WithProtocolCom(ESP_EXCHANGE_DATA_SERIAL,c_Arduino_RcvActuatorsDuration_pac);
+                            Serial.println(Ret_e);
+                            if(Ret_e == RC_OK)
+                            {
+                                Serial.println("Wait for Actuators duration");
+                                delay(ARDUINO_WAIT_SERVER);
+                                Ret_e = ESP_RcvData_WithProtocolCom(ESP_EXCHANGE_DATA_SERIAL, RcvServerData_ac);
+                                answerExpected_pc = strstr(RcvServerData_ac, c_Arduino_RcvActuatorsDuration_pac);
+                                if(answerExpected_pc != (char * )NULL)
+                                {// check rcv actuators duration ok 
+                                    Serial.println("Exctraction actuators duration");
+                                    Ret_e = s_Main_ExtractMasterCmd((const char *)RcvServerData_ac,(t_uint16)strlen(RcvServerData_ac), g_actuatorsDuration_sa16);
+                                    for(LI_u8 = 0 ; LI_u8 < ACT_NUMBER ; LI_u8++)
+                                    {
+                                        Serial.println(g_actuatorsDuration_sa16[LI_u8]);
+                                    }
+                                    Serial.println(Ret_e);
+                                    if(Ret_e == RC_OK)
+                                    {
+                                        g_ArduinoState_e = MAIN_ARDUINO_MODE_SET_ACTUATORS;
+                                    }
+                                }
+                                else
+                                {
+                                    Ret_e = RC_WARNING_WRONG_RESULT;
+                                }                                   
+                            }
+                        }
+                        
+                    }
+                    else 
+                    {
+                        Ret_e = RC_WARNING_WRONG_RESULT;
+                    }
+                }
+                if(Ret_e != RC_OK)
+                {
+                    s_ctr_FailedConnexion_u8 += (t_uint8)1;
+                    g_ArduinoState_e = MAIN_ARDUINO_MODE_ASK_TASK;
+                }
+                break;
+            }
+            case MAIN_ARDUINO_MODE_SET_ACTUATORS:
+            {//If here set actuatos values during actuators timings
+                // first Set actuators values and then ckeck timeDuration to stop irrig
+                if(s_checkTimeDuration_b == false)
+                {
+                    Ret_e = s_Main_SetActuatorsValues(g_actuatorsValue_sa16);
+                    s_checkTimeDuration_b = (t_bool)true;
+                    s_actualTime_ActDuration_u32 = millis();
+                }
+                else
+                {
+                    // check timing duration 
+                    for (LI_u8 = (t_uint8)0; LI_u8 < ACT_NUMBER ; LI_u8++)
+                    {
+                        if(millis() - s_actualTime_ActDuration_u32 > ((t_uint32)g_actuatorsDuration_sa16[LI_u8] * (t_uint32)SEC_IN_MIN))
+                        {// cut the irrigation valve 
+                            Serial.println((millis() - s_actualTime_ActDuration_u32));
+                            Serial.println(g_actuatorsDuration_sa16[LI_u8]* (t_uint32)SEC_IN_MIN);
+                            c_SysActCfg_as[LI_u8].ActSetVal_pcb((t_uint16)0);
+                            g_actuatorsDuration_sa16[LI_u8] = (t_uint32)0;
+                            s_ctr_IrrigValve_Off_u8 += (t_uint8)1;
+                        }
+                    }   
+                    if(s_ctr_IrrigValve_Off_u8 == (t_uint8)ACT_NUMBER)
+                    {// reset timer & passed to another state
+                        s_ctr_IrrigValve_Off_u8 = (t_uint8)0;
+                        s_actualTime_ActDuration_u32 = (t_uint32)0;
+                        s_checkTimeDuration_b = (t_bool)false;
+                        Ret_e = ESP_SendData_WithProtocolCom(ESP_EXCHANGE_DATA_SERIAL, "200 : done");
+                        g_ArduinoState_e = MAIN_ARDUINO_MODE_WAKEUP;
+                    } 
+                }                
+                break;
+            }
+            case MAIN_ARDUINO_MODE_SEND_SENSORS_VALUES:
+            {//IF here send sensors values and go to sleep or make other things
+                Serial.println("Get sensor value");
+                Ret_e = s_Main_GetSensorsValues(g_sensorsValue_sa16);
+                if(Ret_e == RC_OK)
+                {
+                    sendDataToMaster_str = String(c_Arduino_SendData_pac) + String(",");
                     for(LI_u8 = 0 ; LI_u8 < (t_uint8)SNS_NUMBER ; LI_u8++)
                     {
                         sendDataToMaster_str += String(LI_u8) + String(":") + String(g_sensorsValue_sa16[LI_u8]);
@@ -394,26 +484,7 @@ static t_eReturnCode s_Logic_Main_Cyclic()
                 else
                 {
                     Ret_e = ESP_SendData_WithProtocolCom(ESP_EXCHANGE_DATA_SERIAL, "ERROR WHEN TRYING GET DATA");
-                }
-                break;
-            }
-            case MAIN_ARDUINO_MODE_SET_CMD:
-            {//If here set command from receive cmd or what it is scheduled and then do other things
-                // wait a little until Raspberry send data
-                delay(ARDUINO_WAIT_SERVER);
-                Ret_e = ESP_RcvData_WithProtocolCom(ESP_EXCHANGE_DATA_SERIAL,RcvMasterCmd_str.c_str());
-                if(Ret_e == RC_OK)
-                {
-                    Ret_e = s_Main_ExtractMasterCmd(RcvMasterCmd_str.c_str(), RcvMasterCmd_str.length());
-                    if(Ret_e == RC_OK)
-                    {// make cmd on different relays
-
-                    }
-                    else 
-                    {
-                        s_ctr_FailedConnexion_u8 ++;
-                        g_ArduinoState_e = MAIN_ARDUINO_MODE_ASK_TASK;
-                    }
+                    s_ctr_FailedConnexion_u8 += (t_uint8)1;
                 }
                 break;
             }
@@ -474,7 +545,11 @@ static t_eReturnCode s_Logic_MasterConnection(t_sESP_Cfg *f_ESP_Wifi_Cfg_ps)
     }
     if(s_InitModuleESP_b == (t_bool)false)
     {
-        Ret_e = ESP_Init(MAIN_SERIAL_BAUDRATE, MAIN_WIFI_RX, MAIN_WIFI_TX );
+        Ret_e = ESP_Init(ESP_SERIAL_BAUDRATE, MAIN_WIFI_RX, MAIN_WIFI_TX );
+        if(Ret_e == RC_OK)
+        {
+            s_InitModuleESP_b = (t_bool)true;
+        }
     }    
     if(Ret_e == RC_OK)
     {
@@ -489,8 +564,6 @@ static t_eReturnCode s_Logic_MasterConnection(t_sESP_Cfg *f_ESP_Wifi_Cfg_ps)
             {
                 ESP_Wifi_Cfg_s.WifiCfg_s.WifiStatus_e = ESP_WIFI_STATUS_CONNECTED;
             }
-            Serial.print("connect :");
-            Serial.println(Ret_e);
         }
         if(ESP_Wifi_Cfg_s.ConnectState_e != ESP_PROTOCOL_STATE_CONNECTED)
         {
@@ -499,15 +572,13 @@ static t_eReturnCode s_Logic_MasterConnection(t_sESP_Cfg *f_ESP_Wifi_Cfg_ps)
             {
                 ESP_Wifi_Cfg_s.ConnectState_e = ESP_PROTOCOL_STATE_CONNECTED;
             }
-            Serial.print("protocol :");
-            Serial.println(Ret_e);
         }
         f_ESP_Wifi_Cfg_ps->ConnectState_e = ESP_Wifi_Cfg_s.ConnectState_e;
         f_ESP_Wifi_Cfg_ps->ConnectType_e = ESP_Wifi_Cfg_s.ConnectType_e;
         f_ESP_Wifi_Cfg_ps->SleepMode_e = ESP_Wifi_Cfg_s.SleepMode_e;
         f_ESP_Wifi_Cfg_ps->WifiCfg_s.WifiMode_e = ESP_Wifi_Cfg_s.WifiCfg_s.WifiMode_e;
         f_ESP_Wifi_Cfg_ps->WifiCfg_s.WifiStatus_e = ESP_Wifi_Cfg_s.WifiCfg_s.WifiStatus_e;
-    }   
+    } 
     return Ret_e;
 }
 /****************************
@@ -551,41 +622,41 @@ static t_eReturnCode s_Main_SetSNS_ACT_Cfg(void)
 /****************************
 * s_Main_SetActuatorsValues
 ****************************/
-static t_eReturnCode s_Main_SetActuatorsValues(void)
+static t_eReturnCode s_Main_SetActuatorsValues(t_sint16 f_ActuatorsContainer_as16[])
 {
     t_eReturnCode Ret_e = RC_OK;
     t_uint8 LI_u8;
     for(LI_u8 = (t_uint8)0 ; (t_uint8)LI_u8 < ACT_NUMBER && Ret_e == RC_OK; LI_u8++ )
     {
-        Ret_e = c_SysActCfg_as[LI_u8].ActSetVal_pcb(g_actuatorsValue_sa16[LI_u8]);
+        Ret_e = c_SysActCfg_as[LI_u8].ActSetVal_pcb(f_ActuatorsContainer_as16[LI_u8]);
     }
     return Ret_e;
 }
 /****************************
 * s_Main_GetActuatorsValues
 ****************************/
-static t_eReturnCode s_Main_GetActuatorsValues(void)
+static t_eReturnCode s_Main_GetActuatorsValues(t_sint16 f_ActuatorsContainer_as16[])
 {
     t_eReturnCode Ret_e = RC_OK;
     t_uint8 LI_u8;
     for(LI_u8 = (t_uint8)0 ; (t_uint8)LI_u8 < ACT_NUMBER && Ret_e == RC_OK; LI_u8++ )
     {
-        g_actuatorsValue_sa16[LI_u8] = (t_sint16)0;
-        Ret_e = c_SysActCfg_as[LI_u8].ActGetVal_pcb(&g_actuatorsValue_sa16[LI_u8]);
+        f_ActuatorsContainer_as16[LI_u8] = (t_sint16)0;
+        Ret_e = c_SysActCfg_as[LI_u8].ActGetVal_pcb(&f_ActuatorsContainer_as16[LI_u8]);
     }
     return Ret_e;
 }
 /****************************
 * s_Main_GetSensorsValues
 ****************************/
-static t_eReturnCode s_Main_GetSensorsValues(void)
+static t_eReturnCode s_Main_GetSensorsValues(t_sint16 f_SensorsContainer_as16[])
 {
     t_eReturnCode Ret_e = RC_OK;
     t_uint8 LI_u8;
     for(LI_u8 = (t_uint8)0 ; (t_uint8)LI_u8 < SNS_NUMBER && Ret_e == RC_OK; LI_u8++ )
     {
-        g_sensorsValue_sa16[LI_u8] = (t_sint16)0;
-        Ret_e = c_SysSnsCfg_as[LI_u8].SnsGet_pcb(&g_sensorsValue_sa16[LI_u8]);
+        f_SensorsContainer_as16[LI_u8] = (t_sint16)0;
+        Ret_e = c_SysSnsCfg_as[LI_u8].SnsGet_pcb(&f_SensorsContainer_as16[LI_u8]);
         if(Ret_e != RC_OK)
         {
             Serial.print(LI_u8);
@@ -609,35 +680,28 @@ static t_eReturnCode s_Main_GetTask_FromMaster(t_sESP_Cfg f_ESP_Wifi_Cfg_ps, con
         Ret_e = RC_ERROR_PTR_NULL;
     }
     if(Ret_e == RC_OK)
-    {
-        if(f_ESP_Wifi_Cfg_ps.WifiCfg_s.WifiStatus_e == ESP_WIFI_STATUS_CONNECTED && f_ESP_Wifi_Cfg_ps.ConnectState_e == ESP_PROTOCOL_STATE_CONNECTED)
-        {         
-            Ret_e = ESP_SendData_WithProtocolCom(ESP_EXCHANGE_DATA_SERIAL,c_Arduino_AskCmd_pac);
-            delay(ARDUINO_WAIT_SERVER);
+    {        
+        Ret_e = ESP_SendData_WithProtocolCom(ESP_EXCHANGE_DATA_SERIAL,c_Arduino_AskCmd_pac);
+        delay(ARDUINO_WAIT_SERVER);
+        if(Ret_e == RC_OK)
+        {
+            Ret_e = ESP_RcvData_WithProtocolCom(ESP_EXCHANGE_DATA_SERIAL,espResponse_ac);
             if(Ret_e == RC_OK)
             {
-                Ret_e = ESP_RcvData_WithProtocolCom(ESP_EXCHANGE_DATA_SERIAL,espResponse_ac);
-                if(Ret_e == RC_OK)
+                checkstrcpy = strcpy((char *)f_RcvData_pc,(const char *)espResponse_ac);
+                if(checkstrcpy != (char *)f_RcvData_pc)
                 {
-                    checkstrcpy = strcpy((char *)f_RcvData_pc,(const char *)espResponse_ac);
-                    if(checkstrcpy != (char *)f_RcvData_pc)
-                    {
-                        Ret_e = RC_ERROR_COPY_FAILED;
-                    }
+                    Ret_e = RC_ERROR_COPY_FAILED;
                 }
             }
-        }
-        else
-        {
-            Ret_e = RC_ERROR_WRONG_STATE;
-        }
+        }        
     }
     return Ret_e;
 }
 /****************************
 * s_Main_GetTask_FromMaster
 ****************************/
-static t_eReturnCode s_Main_ExtractMasterCmd(const char *f_RcvCmdMaster_pac, t_uint16 f_bufferSize_u16)
+static t_eReturnCode s_Main_ExtractMasterCmd(const char *f_RcvCmdMaster_pac, t_uint16 f_bufferSize_u16, t_sint16 f_container_sa16[])
 {
     t_eReturnCode Ret_e = RC_OK;
     t_uint8 counter_u16 = 0;
@@ -652,10 +716,15 @@ static t_eReturnCode s_Main_ExtractMasterCmd(const char *f_RcvCmdMaster_pac, t_u
         {
             if(f_RcvCmdMaster_pac[LI_u16] == ':')
             {
-                g_actuatorsValue_sa16[counter_u16] = atoi(f_RcvCmdMaster_pac + LI_u16 + 1);
+                if(counter_u16 != (t_uint16)0)
+                {
+                    f_container_sa16[counter_u16 - (t_sint16)1] = atoi(f_RcvCmdMaster_pac + LI_u16 + 1);
+                    
+                }
                 counter_u16 ++;
+                
             }
-            if(counter_u16 > ACT_NUMBER)
+            if(counter_u16 - (t_sint16)1 > ACT_NUMBER)
             {
                 Ret_e = RC_ERROR_LIMIT_REACHED;
             }
@@ -668,7 +737,7 @@ static t_eReturnCode s_Main_ExtractMasterCmd(const char *f_RcvCmdMaster_pac, t_u
 // ********************************************************************
 void setup() 
 {
-    Serial.begin(MAIN_SERIAL_BAUDRATE);
+    Serial.begin(115200);
     attachInterrupt(digitalPinToInterrupt(MAIN_WIFI_RX),s_Main_WakeUpMode,CHANGE);
     //make all config in once
 
@@ -700,6 +769,8 @@ void loop()
     Serial.print("Cyclic Value");
     Serial.println(Ret_e);
     delay(ARDUINO_WAIT_CYCLIC);
+
+
 }
 
 //****************************************************************************

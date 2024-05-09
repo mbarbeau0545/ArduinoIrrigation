@@ -73,8 +73,8 @@
 
     /* CAUTION : Automatic generated code section: Start */
 	typedef enum {
-		SNS_AIRTEMPERATURE,
-		SNS_AIRMOISTURE,
+		//SNS_AIRTEMPERATURE,
+		//SNS_AIRMOISTURE,
 		SNS_SOILMOISTURE_TOMATE,
 		SNS_SOILMOISTURE_COURGETTE,
 		SNS_SOILMOISTURE_CAROTTE,
@@ -84,8 +84,8 @@
 
 	static const t_sSNS_SysSnsCfg c_SysSnsCfg_as[SNS_NUMBER] = 
 	{
-		{	SNS_AirTemperature_Cfg                    	,SNS_AirTemperature_Get},
-		{	SNS_AirMoisture_Cfg                       	,SNS_AirMoisture_Get},
+		//{	SNS_AirTemperature_Cfg                    	,SNS_AirTemperature_Get},
+		//{	SNS_AirMoisture_Cfg                       	,SNS_AirMoisture_Get},
 		{	SNS_SoilMoisture_Tomate_Cfg               	,SNS_SoilMoisture_Tomate_Get},
 		{	SNS_SoilMoisture_Courgette_Cfg            	,SNS_SoilMoisture_Courgette_Get},
 		{	SNS_SoilMoisture_Carotte_Cfg              	,SNS_SoilMoisture_Carotte_Get},
@@ -98,8 +98,8 @@
 
 
     static const t_uint8 c_SensorsPin_ua8[SNS_NUMBER] = {
-                                           (t_uint8)PIN_SNS_AIRTEMPERATURE,                     //SNS_AIRTEMPERATURE, 
-                                           (t_uint8)PIN_SNS_AIRMOISTURE,                        //SNS_AIRMOISTURE,
+                                           //(t_uint8)PIN_SNS_AIRTEMPERATURE,                     //SNS_AIRTEMPERATURE, 
+                                           //(t_uint8)PIN_SNS_AIRMOISTURE,                        //SNS_AIRMOISTURE,
                                            (t_uint8)PIN_SNS_SOILMOISTURE_TOMATE,                //SNS_SOILMOISTURE_TOMATE,
                                            (t_uint8)PIN_SNS_SOILMOISTURE_COURGETTE,             //SNS_SOILMOISTURE_COURGETTE,
                                            (t_uint8)PIN_SNS_SOILMOISTURE_CAROTTE,               //SNS_SOILMOISTURE_CAROTTE,   
@@ -107,8 +107,8 @@
                                         //10 & 11 already token by Wifi esp
 
     static const t_eArduino_PinMode c_Sensors_PinMode_ea[SNS_NUMBER] = {
-                                                    PINMODE_INPUT,                      //SNS_SOILMOISTURE, 
-                                                    PINMODE_INPUT,                      //SNS_SOILTEMP,
+                                                    //PINMODE_INPUT,                      //SNS_SOILMOISTURE, 
+                                                    //PINMODE_INPUT,                      //SNS_SOILTEMP,
                                                     PINMODE_INPUT,                      //SNS_SOIL_PH,
                                                     PINMODE_INPUT,                      //SNS_AIRTEMP,
                                                     PINMODE_INPUT,                     //SNS_AIRMOISTURE,   

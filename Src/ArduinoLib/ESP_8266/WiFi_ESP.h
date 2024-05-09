@@ -23,11 +23,6 @@
     // ********************************************************************
     // *                      Defines
     // ********************************************************************
-   
-
-
-    #define MODEM_TIMEOUT          10000            /* Maximum time waiting for device to respond*/
-    #define MODEM_EXTENDED_TIMEOUT 60000
     // Maximum size of a SSID
     #define ESP_WL_SSID_MAX_LENGTH 32
     // Length of passphrase. Valid lengths are 8-63.
@@ -47,7 +42,7 @@
     // Default state value for Wifi state field
     #define ESP_NA_STATE -1
     //Maximum number of attempts to establish esp connection
-    #define ESP_WL_MAX_ATTEMPT_CONNECTION	5
+    #define ESP_WL_MAX_ATTEMPT_CONNECTION	3
     //TCP, UDP max buufer size to send data 
     #define ESP_TCP_UDP_MAX_BUFFER_SIZE 2048
     //SSL max buffer size 
@@ -132,12 +127,6 @@
 
     ESP_MAKE_CFG_INTO_NB,
    }t_eESP_WriteCfgMode;
-
-   
-
-
-
-    
 
     typedef enum
     {

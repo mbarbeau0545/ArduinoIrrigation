@@ -90,6 +90,7 @@
 
 		ACT_NUMBER,
 	}t_eACT_Actuators;
+    
 	static const t_sACT_SysActCfg c_SysActCfg_as[ACT_NUMBER] = 
 	{
 		{ACT_Cmd_IrrigValve_Tomate_Cfg              ,ACT_Cmd_IrrigValve_Tomate_Set              ,ACT_Cmd_IrrigValve_Tomate_Get},

@@ -25,12 +25,15 @@
 #define ESP_EXPECT_DICONNECT        "DISCONNECT"                    // Expected from ESP : "DISCONNECT"
 #define ESP_EXPECT_BUSY             "busy"                          // Expected from ESP : "busy"
 #define ESP_EXPECT_DATA_SEND        "SEND OK"
+#define ESP_EXCPECT_WIFI_CONNECT    "CWJAP:"
 #define ESP_EXPECT_RCV_DATA         "IPD"
 #define ESP_EXPECT_TCP_CONNECT      "STATUS:3"
+#define EXP_EXPECT_TCP_DISCONNECT   "STATUS:2"
 
-#define ESP_TIMEOUT_WRITE (t_uint16)2000                            //Time waiting from ESP doing the cmd 
-#define ESP_TIMEOUT_READ  (t_uint8)75                               //Time waiting from ESP to send info
-#define ESP_TIMEOUT_SEND  (t_uint16)1000
+#define ESP_TIMEOUT_WRITE     (t_uint16)500                            //Time waiting from ESP doing the cmd 
+#define ESP_TIMEOUT_READ      (t_uint16)350                               //Time waiting from ESP to send info
+#define ESP_TIMEOUT_SEND      (t_uint16)500
+#define ESP_TIMEOUT_RCV  (t_uint16)5000
 
 // ********************************************************************
 // *                      Types
@@ -202,27 +205,20 @@ t_eReturnCode ESP_ConnectWifi(t_eESP_WifiMode f_WifiMode_e, const char *f_SSID_p
         if(Ret_e == RC_OK)
         {        
             g_ESP8266_Info_s.WifiCfg_s.WifiMode_e = (t_eESP_WifiMode)f_WifiMode_e;
-            Ret_e = s_ESP_MakeCommand(CMD_READ(_CWJAP), f_SSID_pc,(t_uint16)ESP_TIMEOUT_READ);
-            if(Ret_e == RC_OK)
-            {//if element find means wifi already connected 
-
+            //make connection to wifi
+            ESP_SetWifiCmd_str = String(CMD_WRITE(_CWJAP_DEF))+ String("\"") + String(f_SSID_pc) + "\",\"" + String(f_password_pc) + "\"\r\n";
+            Ret_e = s_ESP_MakeCommand(ESP_SetWifiCmd_str.c_str(),ESP_EXPECT_CONNECT,ESP_TIMEOUT_WRITE);
+            if(Ret_e == RC_WARNING_WRONG_RESULT || Ret_e == RC_ERROR_LIMIT_REACHED)
+            {
+                Ret_e = RC_ERROR_WRONG_RESULT;
+                g_ESP8266_Info_s.WifiCfg_s.WifiStatus_e =  ESP_WIFI_STATUS_DISCONNECTED;
+            }
+            else if(Ret_e == RC_OK)
+            {//Ret_e == RC_OK
                 g_ESP8266_Info_s.WifiCfg_s.WifiStatus_e =  ESP_WIFI_STATUS_CONNECTED;
             }
-            else 
-            {//make connection to wifi
-                ESP_SetWifiCmd_str = String(CMD_WRITE(_CWJAP_DEF))+ String("\"") + String(f_SSID_pc) + "\",\"" + String(f_password_pc) + "\"\r\n";
-                Ret_e = s_ESP_MakeCommand(ESP_SetWifiCmd_str.c_str(),ESP_EXPECT_CONNECT,ESP_TIMEOUT_WRITE);
-                if(Ret_e == RC_WARNING_WRONG_RESULT || Ret_e == RC_ERROR_LIMIT_REACHED)
-                {
-                    Ret_e = RC_ERROR_WRONG_RESULT;
-                    g_ESP8266_Info_s.WifiCfg_s.WifiStatus_e =  ESP_WIFI_STATUS_DISCONNECTED;
-                }
-                else if(Ret_e == RC_OK)
-                {//Ret_e == RC_OK
-                    g_ESP8266_Info_s.WifiCfg_s.WifiStatus_e =  ESP_WIFI_STATUS_CONNECTED;
-                }
-            }               
-        }        
+        }               
+               
     }
     DEBUG_PRINT("ESP_ConnectWifi Retval :");
     DEBUG_PRINT(Ret_e);
@@ -279,11 +275,10 @@ t_eReturnCode ESP_Start_ProtocolCom(t_eESP_ConnectionType f_ProtocolCom_Type_e,c
         Protocol_Cmd_str = c_ConnectionCmd_uac[f_ProtocolCom_Type_e] + String(",\"") + String(f_IP_Address_pc) + String("\",") + String(f_port_u16) + String("\r\n");
         //Serial.print("SendCmd : ");
         //Serial.println(Protocol_Cmd_str);
-        Ret_e = s_ESP_MakeCommand(Protocol_Cmd_str.c_str(), ESP_EXPECT_CONNECT, ESP_TIMEOUT_WRITE );
+        Ret_e = s_ESP_MakeCommand(Protocol_Cmd_str.c_str(), ESP_EXPECT_CONNECT, ESP_TIMEOUT_SEND);
         //Serial.println(esp_reponse_pc);
         if(Ret_e == RC_OK)
-        {
-            
+        {            
             g_ESP8266_Info_s.ConnectState_e = ESP_PROTOCOL_STATE_CONNECTED;
         }
         else
@@ -348,8 +343,7 @@ t_eReturnCode ESP_SendData_WithProtocolCom(t_eESP_ExchangeDataMode f_DataMode_e,
                 //Data sheet say first send Lenght and if esp Repond OK then send it DATA
                 dataESpCmd_str = String(CMD_WRITE(_CIPSEND)) + String(lenghtData_u16) + String("\r\n");
                 ExpectRcvEsp_str = String(lenghtData_u16);
-                Ret_e = s_ESP_MakeCommand(dataESpCmd_str.c_str(), ExpectRcvEsp_str.c_str(), ESP_TIMEOUT_WRITE);
-                //Ret_e = Modem_Write(dataESpCmd_str.c_str());
+                Ret_e = s_ESP_MakeCommand(dataESpCmd_str.c_str(), ExpectRcvEsp_str.c_str(), ESP_TIMEOUT_READ);
                 if(Ret_e == RC_OK)
                 {
                     Ret_e = s_ESP_MakeCommand(dataToSend_str.c_str(),ESP_EXPECT_DATA_SEND, ESP_TIMEOUT_SEND);
@@ -396,6 +390,7 @@ t_eReturnCode ESP_SendData_WithProtocolCom(t_eESP_ExchangeDataMode f_DataMode_e,
 t_eReturnCode ESP_RcvData_WithProtocolCom(t_eESP_ExchangeDataMode f_RcvDataMode_e, const char *f_RcvData_pc)
 {
     t_eReturnCode Ret_e = RC_OK;
+    t_uint32 ActualTime_u32;
     //t_uint8 LI_u8;
     char * answerExepctedFind_pc = (char*)NULL;
     char * checkstrcpy = (char*)NULL;
@@ -414,11 +409,15 @@ t_eReturnCode ESP_RcvData_WithProtocolCom(t_eESP_ExchangeDataMode f_RcvDataMode_
     }
     if(Ret_e == RC_OK)
     {
+        ActualTime_u32 = millis();
+        Ret_e = RC_WARNING_NO_OPERATION;
+        // Used ReadBuffer function until there is something to read
         Ret_e = Modem_ReadBuffer(espResponse_ac);
+        Serial.println(espResponse_ac);
         if(Ret_e == RC_OK)
         {
             answerExepctedFind_pc = strstr((const char *)espResponse_ac,(const char*)ESP_EXPECT_RCV_DATA);
-            Serial.println(espResponse_ac);
+            //Serial.println(espResponse_ac);
             if(answerExepctedFind_pc != (char *)NULL)
             {
                 //Serial.println("Find IPD");
@@ -518,157 +517,12 @@ t_eReturnCode ESP_SetSleepMode(t_eESP_SleepMode f_sleepMode_e, t_uint32 f_timeSl
             g_ESP8266_Info_s.SleepMode_e = ESP_SLEEP_UNKNOWN;
         }
     }
-    Serial.println(g_ESP8266_Info_s.SleepMode_e);
+    //Serial.println(g_ESP8266_Info_s.SleepMode_e);
     return Ret_e;
 }
 //********************************************************************************
 //                      Local functions - Implementation
 //********************************************************************************
-/***********************
-* s_ESP_MakeCommand
-***********************/
-static t_eReturnCode s_ESP_MakeCommand(const char *f_command_pac, const char * f_answerExpected_pac, t_uint16 timeOutMs_u16)
-{
-    t_eReturnCode Ret_e = RC_OK;
-    t_uint8 LI_u8;
-    char response_ac[MODEM_MAX_BUFF_SIZE];
-    char * answerExepctedFind_pc = (char*)NULL;
-    if(f_command_pac == (const char*)NULL || f_answerExpected_pac == (const char*)NULL)
-    {
-        Ret_e = RC_ERROR_PTR_NULL;
-    }
-    if(Ret_e == RC_OK)
-    {
-        for(LI_u8 = 0 ; LI_u8 < ESP_WL_MAX_ATTEMPT_CONNECTION ; LI_u8++)
-        {
-            Ret_e = Modem_Write(f_command_pac);
-            delay(timeOutMs_u16);
-            if(Ret_e == RC_OK)
-            {   
-                Ret_e = Modem_ReadBuffer(response_ac);
-                //Serial.print(response_ac);
-                //see if ESP answer is corresponding with what expected
-                if(Ret_e == RC_OK)
-                {
-                    //if "busy" in response_ac go read the rest of the buffer 'cause ESP did not finished is previous task                  
-                    answerExepctedFind_pc = strstr(response_ac, ESP_EXPECT_BUSY);
-                    if(answerExepctedFind_pc != (char *)NULL)
-                    {
-                        //Serial.println("Waiting");
-                        
-                        Ret_e = Modem_ReadBuffer(response_ac);
-                    }
-                    /*
-                    if(f_command_pac == "None")
-                    {
-                        //Serial.println("ReceivedCmd :");
-                        Serial.println(response_ac);
-                    }
-                    */
-                    
-                    if(Ret_e == RC_OK)
-                    {
-                        answerExepctedFind_pc = (char * )NULL;
-                        answerExepctedFind_pc = strstr(response_ac, f_answerExpected_pac);
-                        if(answerExepctedFind_pc != (char *)NULL)
-                        {
-                            Ret_e = RC_OK;
-                            break;
-                        }
-                        else 
-                        {
-                            Ret_e = RC_WARNING_WRONG_RESULT;
-                        }     
-                    }                        
-                }        
-            }            
-        }
-        //Serial.println(response_ac);
-        
-        if(LI_u8 >= ESP_WL_MAX_ATTEMPT_CONNECTION)
-        {
-          Ret_e = RC_ERROR_LIMIT_REACHED;
-        }
-    }
-    DEBUG_PRINT("s_ESP_MakeCommand RetVal:");
-    DEBUG_PRINTLN(Ret_e);
-    return Ret_e;
-}
-/********************************
-* s_ESP_MakeCommand_WithResponse
-********************************/    
-static t_eReturnCode s_ESP_MakeCommand_WithResponse(const char *f_command_pac, const char * f_answerExpected_pac, t_uint16 timeOutMs_u16,const char * f_answer_pac)
-{
-    t_eReturnCode Ret_e = RC_OK;
-    t_uint8 LI_u8;
-    t_uint8 maxTryWrite_u8 = ESP_WL_MAX_ATTEMPT_CONNECTION;
-    char response_ac[MODEM_MAX_BUFF_SIZE];
-    char * answerExepctedFind_pc = (char*)NULL;
-    char * checkstrcpy = (char*)NULL;
-    if(f_command_pac == (const char*)NULL || f_answerExpected_pac == (const char*)NULL)
-    {
-        Ret_e = RC_ERROR_PTR_NULL;
-    }
-    if(Ret_e == RC_OK)
-    {
-        for(LI_u8 = 0 ; LI_u8 < ESP_WL_MAX_ATTEMPT_CONNECTION ; LI_u8++)
-        {
-            Ret_e = Modem_Write(f_command_pac);
-            delay(timeOutMs_u16);
-            if(Ret_e == RC_OK)
-            {   
-                Ret_e = Modem_ReadBuffer(response_ac);
-                //Serial.println(response_ac);
-                //see if ESP answer is corresponding with what expected
-                if(Ret_e == RC_OK)
-                {
-                    //if "busy" in response_ac go read the rest of the buffer 'cause ESP did not finished is previous task                  
-                    answerExepctedFind_pc = strstr(response_ac, ESP_EXPECT_BUSY);
-                    if(answerExepctedFind_pc != (char *)NULL)
-                    {
-                        //Serial.println("Waiting");
-                        
-                        Ret_e = Modem_ReadBuffer(response_ac);
-                    }
-                    //Serial.println("ReceivedCmd :");
-                    //Serial.println(response_ac);
-                    if(Ret_e == RC_OK)
-                    {
-                        answerExepctedFind_pc = (char * )NULL;
-                        answerExepctedFind_pc = strstr(response_ac, f_answerExpected_pac);
-                        if(answerExepctedFind_pc != (char *)NULL)
-                        {
-                            //Serial.println("find it");
-                            checkstrcpy = strcpy((char *)f_answer_pac, (const char *)response_ac);
-                            if ((char *)checkstrcpy != (char *)f_answer_pac) 
-                            {
-                                Ret_e = RC_ERROR_COPY_FAILED;
-                            }
-                            else
-                            {
-                                Ret_e = RC_OK;
-                                break;
-                            }
-                            
-                        }
-                        else 
-                        {
-                            Ret_e = RC_WARNING_WRONG_RESULT;
-                        }     
-                    }                        
-                }        
-            }            
-        }
-        //Serial.println(LI_u8);
-        if(LI_u8 >= maxTryWrite_u8)
-        {
-          Ret_e = RC_ERROR_LIMIT_REACHED;
-        }
-    }
-    DEBUG_PRINT("s_ESP_MakeCommand_Withreponse RetVal:");
-    DEBUG_PRINTLN(Ret_e);
-    return Ret_e;
-}   
 /********************************
 * s_ESP_GetInfo_StateESP
 ********************************/   
@@ -682,7 +536,7 @@ static t_eReturnCode s_ESP_GetInfo_StateESP(void)
     if(Ret_e == RC_OK)
     {
         //ESP send +CWJAP : "livebox name", "IP address", if Wifi Connected, and NO AP if not 
-        answerExpectedFound_pc = (char *)strstr(response_ac, "CWJAP");
+        answerExpectedFound_pc = (char *)strstr(response_ac, ESP_EXCPECT_WIFI_CONNECT);
         if(answerExpectedFound_pc == (char *)NULL)
         {
             g_ESP8266_Info_s.WifiCfg_s.WifiStatus_e = ESP_WIFI_STATUS_DISCONNECTED;
@@ -711,6 +565,125 @@ static t_eReturnCode s_ESP_GetInfo_StateESP(void)
     }
     return Ret_e;    
 }
+/***********************
+* s_ESP_MakeCommand
+***********************/
+static t_eReturnCode s_ESP_MakeCommand(const char *f_command_pac, const char * f_answerExpected_pac, t_uint16 timeOutMs_u16)
+{
+    t_eReturnCode Ret_e = RC_OK;
+    t_uint8 LI_u8;
+    char response_ac[MODEM_MAX_BUFF_SIZE];
+    char * answerExepctedFind_pc = (char*)NULL;
+    if(f_command_pac == (const char*)NULL || f_answerExpected_pac == (const char*)NULL)
+    {
+        Ret_e = RC_ERROR_PTR_NULL;
+    }
+    if(Ret_e == RC_OK)
+    {
+        for(LI_u8 = 0 ; LI_u8 < ESP_WL_MAX_ATTEMPT_CONNECTION ; LI_u8++)
+        {
+            delay(ESP_TIMEOUT_READ);
+            Ret_e = Modem_Write(f_command_pac);
+            delay(timeOutMs_u16);
+            if(Ret_e == RC_OK)
+            {   
+                Ret_e = Modem_ReadBuffer(response_ac);
+                //see if ESP answer is corresponding with what expected
+            }
+            if(Ret_e == RC_OK)
+            {  
+                answerExepctedFind_pc = (char * )NULL;
+                answerExepctedFind_pc = strstr(response_ac, f_answerExpected_pac);
+                if(answerExepctedFind_pc != (char *)NULL)
+                {
+                    Ret_e = RC_OK;
+                    break;
+                }
+                else 
+                {
+                    Ret_e = RC_WARNING_WRONG_RESULT;
+                }                          
+            }                        
+        } 
+    }
+    DEBUG_PRINT("s_ESP_MakeCommand RetVal:");
+    DEBUG_PRINTLN(Ret_e);
+    return Ret_e;
+}
+/********************************
+* s_ESP_MakeCommand_WithResponse
+********************************/    
+static t_eReturnCode s_ESP_MakeCommand_WithResponse(const char *f_command_pac, const char * f_answerExpected_pac, t_uint16 timeOutMs_u16, const char * f_answer_pac)
+{
+    t_eReturnCode Ret_e = RC_OK;
+    t_uint8 LI_u8;
+    t_uint8 maxTryWrite_u8 = ESP_WL_MAX_ATTEMPT_CONNECTION;
+    char response_ac[MODEM_MAX_BUFF_SIZE];
+    char * answerExepctedFind_pc = (char*)NULL;
+    char * checkstrcpy = (char*)NULL;
+    if(f_command_pac == (const char*)NULL || f_answerExpected_pac == (const char*)NULL)
+    {
+        Ret_e = RC_ERROR_PTR_NULL;
+    }
+    if(Ret_e == RC_OK)
+    {
+        for(LI_u8 = 0 ; LI_u8 < ESP_WL_MAX_ATTEMPT_CONNECTION ; LI_u8++)
+        {
+            delay(ESP_TIMEOUT_READ);
+            Ret_e = Modem_Write(f_command_pac);
+            delay(timeOutMs_u16);
+            if(Ret_e == RC_OK)
+            {   
+                Ret_e = Modem_ReadBuffer(response_ac);
+            }
+            //see if ESP answer is corresponding with what expected
+            if(Ret_e == RC_OK)
+            {
+                //if "busy" in response_ac go read the rest of the buffer 'cause ESP did not finished is previous task                  
+                answerExepctedFind_pc = strstr(response_ac, ESP_EXPECT_BUSY);
+                if(answerExepctedFind_pc != (char *)NULL)
+                {
+                    //Serial.println("Waiting");
+                    Ret_e = RC_WARNING_BUSY;
+                }
+                else
+                {
+                    //Serial.println("ReceivedCmd :");
+                    //Serial.println(response_ac);
+                    answerExepctedFind_pc = (char * )NULL;
+                    answerExepctedFind_pc = strstr(response_ac, f_answerExpected_pac);
+                    if(answerExepctedFind_pc != (char *)NULL)
+                    {
+                        //Serial.println("find it");
+                        checkstrcpy = strcpy((char *)f_answer_pac, (const char *)response_ac);
+                        if ((char *)checkstrcpy != (char *)f_answer_pac) 
+                        {
+                            Ret_e = RC_ERROR_COPY_FAILED;
+                        }
+                        else
+                        {
+                            Ret_e = RC_OK;
+                            break;
+                        }                            
+                    }
+                    else 
+                    {
+                        Ret_e = RC_WARNING_WRONG_RESULT;
+                    }     
+                }                          
+            }            
+        }
+        //Serial.println(LI_u8);
+        if(LI_u8 >= maxTryWrite_u8)
+        {
+          Ret_e = RC_ERROR_LIMIT_REACHED;
+        }
+    }
+    DEBUG_PRINT("s_ESP_MakeCommand_Withreponse RetVal:");
+    DEBUG_PRINTLN(Ret_e);
+    return Ret_e;
+}   
+
 //************************************************************************************
 // End of File
 //************************************************************************************
