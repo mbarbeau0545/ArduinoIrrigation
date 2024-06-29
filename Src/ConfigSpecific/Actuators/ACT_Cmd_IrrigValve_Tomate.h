@@ -1,15 +1,15 @@
 /*********************************************************************
- * @file        SNS_AirTemperature.h
+ * @file        ACT_Cmd_IrrigValve_Tomate.h
  * @brief       Template_BriefDescription.
  * @details     TemplateDetailsDescription.\n
  *
- * @author      xxxxxx
+ * @author      audmba
  * @date        jj/mm/yyyy
  * @version     1.0
  */
   
-#ifndef SNS_AIRTEMPERATURE_H_INCLUDED
-#define SNS_AIRTEMPERATURE_H_INCLUDED
+#ifndef ACT_CMD_IRRIGVALVE_TOMATE_H_INCLUDED
+#define ACT_CMD_IRRIGVALVE_TOMATE_H_INCLUDED
 
 
 
@@ -18,15 +18,15 @@
     // ********************************************************************
     // *                      Includes
     // ********************************************************************
-    
+    #include "./AppCommon/TypeCommon.h"
+
+    #include "./ConfigSpecific/Func_CfgSpecific/Arduino_ConfigSpecific.h"
+
+    #include <Arduino.h>
     // ********************************************************************
     // *                      Defines
     // ********************************************************************
-    #include "../AppCommon/TypeCommon.h"
 
-    #include "../ConfigSpecific/Arduino_ConfigSpecific.h"
-    #include "../ArduinoLib/DHT/DHT.h"
-    #include <Arduino.h>
     // ********************************************************************
     // *                      Types
     // ********************************************************************
@@ -54,7 +54,7 @@
     *
     *
     */
-    t_eReturnCode SNS_AirTemperature_Cfg(t_uint8 f_pin, t_eArduino_PinMode f_Pinmode);
+    t_eReturnCode ACT_Cmd_IrrigValve_Tomate_Cfg(t_uint8 f_pin, t_eArduino_PinMode f_Pinmode);
     /**
     *
     *	@brief
@@ -67,8 +67,22 @@
     *
     *
     */
-    t_eReturnCode SNS_AirTemperature_Get(t_sint16 *f_value_s16);
-#endif // SNS_AIRTEMP_H_INCLUDED           
+    t_eReturnCode ACT_Cmd_IrrigValve_Tomate_Set(t_sint16 f_value);
+    /**
+    *
+    *	@brief
+    *	@details
+    *
+    *
+    *	@param[in] 
+    *	@param[out]
+    *	 
+    *
+    *
+    */
+    t_eReturnCode ACT_Cmd_IrrigValve_Tomate_Get(t_sint16 *f_value);
+
+#endif // ACT_CMD_IRRIGVALVE_TOMATE_H_INCLUDED           
 //************************************************************************************
 // End of File
 //************************************************************************************

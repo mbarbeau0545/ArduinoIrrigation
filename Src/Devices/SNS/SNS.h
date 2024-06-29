@@ -1,29 +1,23 @@
 /*********************************************************************
- * @file        SNS_AirMoisture.h
+ * @file        SNS.h
  * @brief       Template_BriefDescription.
  * @details     TemplateDetailsDescription.\n
  *
- * @author      xxxxxx
- * @date        jj/mm/yyyy
+ * @author      AUDMBA
+ * @date        09/03/2024
  * @version     1.0
- */
-  
-#ifndef SNS_AIRMOISTURE_H_INCLUDED
-#define SNS_AIRMOISTURE_H_INCLUDED
+ *********************************************************************/
 
-
-
-
-
+#ifndef SNS_H_INCLUDED
+#define SNS_H_INCLUDED
     // ********************************************************************
     // *                      Includes
     // ********************************************************************
-    #include "../AppCommon/TypeCommon.h"
+    #include "./AppCommon/TypeCommon.h"
 
-    #include "../ConfigSpecific/Arduino_ConfigSpecific.h"
-    #include "../ArduinoLib/DHT/DHT.h"
+    #include "./ConfigSpecific/Func_CfgSpecific/Sensors_ConfigSpecific.h"
 
-    #include <Arduino.h>
+    #include  <Arduino.h>
     // ********************************************************************
     // *                      Defines
     // ********************************************************************
@@ -39,37 +33,61 @@
     // ********************************************************************
     // *                      Variables
     // ********************************************************************
-    
+
+    //********************************************************************************
+    //                      Local functions - Prototypes
+    //********************************************************************************
+
     //****************************************************************************
-    //                      Public functions - Prototypes
+    //                      Public functions - Implementation
     //********************************************************************************
     /**
-    *
-    *	@brief
+     *
+     *	@brief
     *	@details
     *
     *
-    *	@param[in] 
-    *	@param[out]
+    *	@params[in] 
+    *	@params[out]
     *	 
     *
     *
     */
-    t_eReturnCode SNS_AirMoisture_Cfg(t_uint8 f_pin_u8, t_eArduino_PinMode f_pinMode_e);
+    t_eReturnCode SNS_Init(void);
     /**
-    *
-    *	@brief
+     *
+     *	@brief
     *	@details
     *
     *
-    *	@param[in] 
-    *	@param[out]
+    *	@params[in] 
+    *	@params[out]
     *	 
     *
     *
     */
-    t_eReturnCode SNS_AirMoisture_Get(t_sint16 *f_value_s16);
-#endif // SNS_AIRMOISTURE_H_INCLUDED           
+    t_eReturnCode SNS_Set_Cfg(t_eSNS_Sensors f_SNSName_e);
+
+
+    /**
+     *
+     *	@brief
+    *	@details
+    *
+    *
+    *	@params[in] 
+    *	@params[out]
+    *	 
+    *
+    *
+    */
+    t_eReturnCode SNS_Get(t_eSNS_Sensors f_actuatorName_e, t_sint16 *f_SNSVal_s16);
+#endif // ACT_H_INCLUDED
+ 
+//********************************************************************************
+//                      Local functions - Implementation
+//******************************************************************************** 
+         
 //************************************************************************************
 // End of File
 //************************************************************************************

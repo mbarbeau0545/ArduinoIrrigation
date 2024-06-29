@@ -17,8 +17,7 @@
     // ********************************************************************
     // *                      Includes
     // ********************************************************************
-    #include "../AppCommon/TypeCommon.h"
-
+    #include "./AppCommon/TypeCommon.h"
     #include "../Sensors/SNS_AirMoisture.h"
     #include "../Sensors/SNS_AirTemperature.h"
     #include "../Sensors/SNS_SoilMoisture_Carotte.h"

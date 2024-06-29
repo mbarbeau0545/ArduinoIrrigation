@@ -20,7 +20,8 @@
     // ********************************************************************
     #include "AppCommon/TypeCommon.h"
      
-    #include "ConfigSpecific/Arduino_ConfigSpecific.h"
+    #include "./ConfigSpecific/Func_CfgSpecific/Arduino_ConfigSpecific.h"
+    
     #include <Arduino.h>
     // ********************************************************************
     // *                      Defines

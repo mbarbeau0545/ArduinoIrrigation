@@ -1,5 +1,5 @@
 /*********************************************************************
- * @file        ACT_Cmd_IrrigValve_Tomate.h
+ * @file        ACT_Cmd_IrrigValve_Courgette.h
  * @brief       Template_BriefDescription.
  * @details     TemplateDetailsDescription.\n
  *
@@ -8,8 +8,8 @@
  * @version     1.0
  */
   
-#ifndef ACT_CMD_IRRIGVALVE_TOMATE_H_INCLUDED
-#define ACT_CMD_IRRIGVALVE_TOMATE_H_INCLUDED
+#ifndef ACT_CMD_IRRIGVALVE_COURGETTE_H_INCLUDED
+#define ACT_CMD_IRRIGVALVE_COURGETTE_H_INCLUDED
 
 
 
@@ -18,9 +18,9 @@
     // ********************************************************************
     // *                      Includes
     // ********************************************************************
-    #include "AppCommon/TypeCommon.h"
+    #include "./AppCommon/TypeCommon.h"
 
-    #include "ConfigSpecific/Arduino_ConfigSpecific.h"
+    #include "./ConfigSpecific/Func_CfgSpecific/Arduino_ConfigSpecific.h"
 
     #include <Arduino.h>
     // ********************************************************************
@@ -54,7 +54,7 @@
     *
     *
     */
-    t_eReturnCode ACT_Cmd_IrrigValve_Tomate_Cfg(t_uint8 f_pin, t_eArduino_PinMode f_Pinmode);
+    t_eReturnCode ACT_Cmd_IrrigValve_Courgette_Cfg(t_uint8 f_pin, t_eArduino_PinMode f_Pinmode);
     /**
     *
     *	@brief
@@ -67,7 +67,7 @@
     *
     *
     */
-    t_eReturnCode ACT_Cmd_IrrigValve_Tomate_Set(t_sint16 f_value);
+    t_eReturnCode ACT_Cmd_IrrigValve_Courgette_Set(t_sint16 f_value);
     /**
     *
     *	@brief
@@ -80,9 +80,9 @@
     *
     *
     */
-    t_eReturnCode ACT_Cmd_IrrigValve_Tomate_Get(t_sint16 *f_value);
+    t_eReturnCode ACT_Cmd_IrrigValve_Courgette_Get(t_sint16 *f_value);
 
-#endif // ACT_CMD_IRRIGVALVE_TOMATE_H_INCLUDED           
+#endif // ACT_CMD_IRRIGVALVE_CAROTTE_H_INCLUDED           
 //************************************************************************************
 // End of File
 //************************************************************************************

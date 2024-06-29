@@ -19,10 +19,14 @@
     // *                      Includes
     // ********************************************************************
     #include "Arduino.h"
+
     #include "Modem.h"
     // ********************************************************************
     // *                      Defines
     // ********************************************************************
+    #define BAUDRATE_WIFI 115200
+
+
     // Maximum size of a SSID
     #define ESP_WL_SSID_MAX_LENGTH 32
     // Length of passphrase. Valid lengths are 8-63.
@@ -52,6 +56,7 @@
     // ********************************************************************
     // *                      Types
     // ********************************************************************
+        /**<START FOR ESP8266 */
     typedef enum 
     {
         ESP_WIFI_STATUS_CONNECTED = 0,              //The WiFi is now connected.
@@ -111,15 +116,6 @@
         ESP_SLEEP_UNKNOWN,
    }t_eESP_SleepMode;
 
-    typedef struct 
-    {
-        t_sESP_WifiCfg        WifiCfg_s;
-        t_eESP_ConnectionType ConnectType_e;
-        t_eESP_ProtocolState  ConnectState_e;
-        t_eESP_SleepMode      SleepMode_e;
-    }t_sESP_Cfg;
-
-
     typedef enum 
    {
     ESP_MAKE_CFG_INTO_FLASH = 0, // Advised, automatically configured Wi-Fi and Connection Type
@@ -149,6 +145,31 @@
 
         ESP_EXCHANGE_DATA_NB,
     }t_eESP_ExchangeDataMode;
+
+
+    typedef struct 
+    {
+        t_sESP_WifiCfg        WifiCfg_s;
+        t_eESP_ConnectionType ConnectType_e;
+        t_eESP_ProtocolState  ConnectState_e;
+        t_eESP_SleepMode      SleepMode_e;
+    }t_sESP_ComStatus;
+
+    typedef struct 
+    {
+        t_eESP_WifiMode             WifiMode_e;
+        t_eESP_ExchangeDataMode     exchangeType_e;
+        t_eESP_ConnectionType       ProtComType_e;
+        t_uint16                    baudRate_u16;
+        t_uint8                     rxPin_u8;
+        t_uint8                     txPin_u8;
+        const char *                serverID_pac;
+        t_uint8                     serverPrt_u8;
+        const char *                LiveBoxName_pac;
+        const char *                password_pac;
+    }t_sESP_ClientCfg;
+
+
     // ********************************************************************
     // *                      Prototypes
     // ********************************************************************
@@ -156,7 +177,23 @@
     // ********************************************************************
     // *                      Variables
     // *******************************************************************
-
+    /**< Wifi COnfiguration*/
+    const t_sESP_ClientCfg c_ESPComProjectCfg_s = {
+        .WifiMode_e         = ESP_WIFI_MODE_STATION,
+        .exchangeType_e     = ESP_EXCHANGE_DATA_SERIAL,
+        .ProtComType_e      = ESP_CONNECTION_TCP_CLIENT,
+        .baudRate_u16       = (t_uint16)BAUDRATE_WIFI, // Par exemple, BAUDRATE_WIFI peut être 115200
+        .rxPin_u8           = 2,
+        .txPin_u8           = 3,
+        .serverID_pac       = "192.168.1.26",    
+        .serverPrt_u8       = 80,
+        .LiveBoxName_pac    = "Livebox-0BB3",
+        .password_pac       = "7CF8844459F167816393050EE2",
+        
+    };
+    /*const char * SSID_Nantes =  "Livebox-E030";
+    const char * Password_Nantes =  "ZRvFTt7t2kfVaWrSYX";
+    const char * IP_AUDMBA_Nantes =  "192.168.1.26";*/
     // ********************************************************************
     // *                      Public Functions
     // ********************************************************************  
@@ -176,7 +213,7 @@
     *
     *
     */ 
-    t_eReturnCode ESP_Init(t_uint32 f_baudrate_u32, t_uint8 f_rxPin_u8, t_uint8 f_txPin_u8);
+    t_eReturnCode ESP_Init(void);
     /**
     *
     *	@brief      End every Communication outside and inside the ESP
@@ -208,7 +245,7 @@
     *
     *
     */ 
-    t_eReturnCode ESP_ConnectWifi(t_eESP_WifiMode f_WifiMode_e, const char *f_SSID, const char *f_password);
+    t_eReturnCode ESP_ConnectWifi(const char *f_SSID, const char *f_password);
         /**
     *
     *	@brief Disconnect the Wifi 
@@ -227,6 +264,7 @@
     *	@brief      Enable user to make communication
     *	@details    The user can choose between 3 protocol communication in
     *               t_eESP_ConnectionType, TCP, UDP, SSL
+    *               If Wifi is not connected, it try make it.\n
     *
     *
     *	@param[in] f_ProtocolCom_Type_e   : kinf of Protocol accepted TCP, UDP, SSL
@@ -235,7 +273,7 @@
     *   @param[out]
     *   
     */  
-    t_eReturnCode ESP_Start_ProtocolCom(t_eESP_ConnectionType f_ProtocolCom_Type_e,const char * f_IP_Address_pc, t_uint16 f_port_u16);
+    t_eReturnCode ESP_Start_ProtocolCom(void);
     /**
     *
     *	@brief      Close Protocol Communication
@@ -268,7 +306,7 @@
     *   RC_ERROR_NOT_ALLOWED            : User can not use SendBuf in SSL connection.\n
     *   RC_OK                           : Data send succesfully.\n
     */ 
-    t_eReturnCode ESP_SendData_WithProtocolCom(t_eESP_ExchangeDataMode f_DataMode_e, const char * f_dataToSend_pc);
+    t_eReturnCode ESP_SendData_WithProtocolCom(const char * f_dataToSend_pc);
     /**
     *
     *	@brief
@@ -288,7 +326,7 @@
     *
     *
     */
-    t_eReturnCode ESP_RcvData_WithProtocolCom(t_eESP_ExchangeDataMode f_RcvDataMode_e, const char * f_RcvData_pc);
+    t_eReturnCode ESP_RcvData_WithProtocolCom(const char * f_RcvData_pc);
     /**
     *
     *	@brief
@@ -301,7 +339,7 @@
     *
     *
     */
-    t_eReturnCode ESP_Get_ProtocolCom_Cfg(t_sESP_Cfg *f_ESP_Config_e);
+    t_eReturnCode ESP_Get_ProtocolCom_Cfg(t_sESP_ComStatus *f_ESP_Config_u);
     /**
     *
     *	@brief

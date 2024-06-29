@@ -20,7 +20,7 @@
     // ********************************************************************
     #include "Arduino.h"
 
-    #include "../AppCommon/TypeCommon.h"
+    #include "./AppCommon/TypeCommon.h"
 
     #include "../Actuators/ACT_Cmd_IrrigValve_Carotte.h"
     #include "../Actuators/ACT_Cmd_IrrigValve_Courgette.h"

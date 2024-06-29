@@ -16,6 +16,7 @@
 
 
 
+
 // ********************************************************************
 // *                      Defines
 // ********************************************************************
@@ -33,7 +34,7 @@
 #define ESP_TIMEOUT_WRITE     (t_uint16)500                            //Time waiting from ESP doing the cmd 
 #define ESP_TIMEOUT_READ      (t_uint16)350                               //Time waiting from ESP to send info
 #define ESP_TIMEOUT_SEND      (t_uint16)500
-#define ESP_TIMEOUT_RCV  (t_uint16)5000
+#define ESP_TIMEOUT_RCV       (t_uint16)5000
 
 // ********************************************************************
 // *                      Types
@@ -49,15 +50,16 @@
 
 t_bool g_ESP_ModemCom_Initialized_b = false;
 
-t_sESP_Cfg g_ESP8266_Info_s = {
+t_sESP_ComStatus g_ESP8266_Info_s = {
         .WifiCfg_s = {
-        .WifiMode_e     = ESP_WIFI_MODE_UNDEFINED,
-        .WifiStatus_e   = ESP_WIFI_STATUS_DISCONNECTED,
-    },
+            .WifiMode_e     = ESP_WIFI_MODE_UNDEFINED,
+            .WifiStatus_e   = ESP_WIFI_STATUS_DISCONNECTED,
+        },
         .ConnectType_e  = ESP_CONNECTION_UNKNOWN,  
         .ConnectState_e = ESP_PROTOCOL_STATE_DISCONNECT,                                           //All disable
         .SleepMode_e    = ESP_SLEEP_UNKNOWN,
     };
+    
 const char *c_WifiCmd_uac[ESP_WIFI_MODE_NB] = {
     CMD_WRITE(_CWMODE)"1",                                                                    //ESP_WIFI_MODE_STATION = 0,
     CMD_WRITE(_CWMODE)"2",                                                                    //ESP_WIFI_MODE_AP,
@@ -124,10 +126,13 @@ static t_eReturnCode s_ESP_GetInfo_StateESP(void);
 /**********************
 * ESP_Init
 ***********************/
- t_eReturnCode ESP_Init(t_uint32 f_baudrate_u32, t_uint8 f_rxPin_u8, t_uint8 f_txPin_u8)
+ t_eReturnCode ESP_Init(void)
  {
     t_eReturnCode Ret_e = RC_OK;
-    Ret_e = Modem_InitCom(f_baudrate_u32,f_rxPin_u8,f_txPin_u8);
+    t_uint16 baudRate_u16 = c_ESPComProjectCfg_s.baudRate_u16;
+    t_uint8  rxPin_u8     = c_ESPComProjectCfg_s.rxPin_u8;
+    t_uint8  txPin_u8     = c_ESPComProjectCfg_s.txPin_u8;
+    Ret_e = Modem_InitCom(baudRate_u16, rxPin_u8, txPin_u8);
     if(Ret_e == RC_OK)
     {
         Ret_e = s_ESP_MakeCommand("AT\r\n", ESP_EXPECT_OK, ESP_TIMEOUT_READ);
@@ -177,11 +182,12 @@ static t_eReturnCode s_ESP_GetInfo_StateESP(void);
 /**********************
 * ESP_ConnectWifi
 ***********************/
-t_eReturnCode ESP_ConnectWifi(t_eESP_WifiMode f_WifiMode_e, const char *f_SSID_pc, const char *f_password_pc)
+t_eReturnCode ESP_ConnectWifi(const char *f_SSID_pc, const char *f_password_pc)
 {
     t_eReturnCode Ret_e = RC_OK;
     String ESP_WifiModeCmd_str;
     String ESP_SetWifiCmd_str;
+    t_eESP_WifiMode WifiMode_e = c_ESPComProjectCfg_s.WifiMode_e;
     if(f_SSID_pc == (const char *)NULL || f_password_pc == (const char *)NULL)
     {
         Ret_e = RC_ERROR_PTR_NULL;
@@ -190,21 +196,21 @@ t_eReturnCode ESP_ConnectWifi(t_eESP_WifiMode f_WifiMode_e, const char *f_SSID_p
     {
         Ret_e = RC_ERROR_MODULE_NOT_INITIALIZED;
     }
-    if(f_WifiMode_e > ESP_WIFI_MODE_NB)
+    if(WifiMode_e > ESP_WIFI_MODE_NB)
     {
         Ret_e = RC_ERROR_NOT_SUPPORTED;
     }
     if(Ret_e == RC_OK)
     {
-        if(g_ESP8266_Info_s.WifiCfg_s.WifiMode_e != f_WifiMode_e)
+        if(g_ESP8266_Info_s.WifiCfg_s.WifiMode_e != WifiMode_e)
         {
             
-            ESP_WifiModeCmd_str = String(c_WifiCmd_uac[f_WifiMode_e]) + String("\r\n");
+            ESP_WifiModeCmd_str = String(c_WifiCmd_uac[WifiMode_e]) + String("\r\n");
             Ret_e = s_ESP_MakeCommand(ESP_WifiModeCmd_str.c_str(),ESP_EXPECT_OK, ESP_TIMEOUT_READ);
         } 
         if(Ret_e == RC_OK)
         {        
-            g_ESP8266_Info_s.WifiCfg_s.WifiMode_e = (t_eESP_WifiMode)f_WifiMode_e;
+            g_ESP8266_Info_s.WifiCfg_s.WifiMode_e = (t_eESP_WifiMode)WifiMode_e;
             //make connection to wifi
             ESP_SetWifiCmd_str = String(CMD_WRITE(_CWJAP_DEF))+ String("\"") + String(f_SSID_pc) + "\",\"" + String(f_password_pc) + "\"\r\n";
             Ret_e = s_ESP_MakeCommand(ESP_SetWifiCmd_str.c_str(),ESP_EXPECT_CONNECT,ESP_TIMEOUT_WRITE);
@@ -252,27 +258,40 @@ t_eReturnCode ESP_DisConnectWifi(void)
 /*************************
 * ESP_Start_ProtocolCom  
 *************************/
-t_eReturnCode ESP_Start_ProtocolCom(t_eESP_ConnectionType f_ProtocolCom_Type_e,const char * f_IP_Address_pc, t_uint16 f_port_u16)
+t_eReturnCode ESP_Start_ProtocolCom(void)
 {
+    t_eESP_ConnectionType ProtComType_e = c_ESPComProjectCfg_s.ProtComType_e;
     t_eReturnCode Ret_e = RC_OK;
     String Protocol_Cmd_str;
+    const char * IP_Address_pc = c_ESPComProjectCfg_s.serverID_pac;
+    t_uint8      serverPort_u8 = c_ESPComProjectCfg_s.serverPrt_u8;
+    const char * wifiRouterName_pac; 
+    const char * wifiPassWord_pac;
     if(g_ESP_ModemCom_Initialized_b != (t_bool)true)
     {
         Ret_e = RC_ERROR_MODULE_NOT_INITIALIZED;
     }
-    if(f_ProtocolCom_Type_e > ESP_CONNECTION_NB)
+    if(ProtComType_e > ESP_CONNECTION_NB)
     {
         g_ESP8266_Info_s.ConnectType_e = ESP_CONNECTION_UNKNOWN;
         Ret_e = RC_ERROR_PARAM_INVALID;
     }
+    // get info status
+    Ret_e = s_ESP_GetInfo_StateESP();  
     if(g_ESP8266_Info_s.WifiCfg_s.WifiStatus_e != ESP_WIFI_STATUS_CONNECTED)
-    {//Wifi not Connected
-        Ret_e = RC_ERROR_WRONG_STATE;
+    {//Wifi not Connected, make connection 
+        wifiRouterName_pac = c_ESPComProjectCfg_s.LiveBoxName_pac;
+        wifiPassWord_pac   = c_ESPComProjectCfg_s.password_pac;
+        Ret_e = ESP_ConnectWifi((const char *)wifiRouterName_pac, (const char *)wifiPassWord_pac);
+    }
+    if(g_ESP8266_Info_s.ConnectState_e == ESP_PROTOCOL_STATE_CONNECTED)
+    {
+        Ret_e = RC_WARNING_ALREADY_CONFIGURED;
     }
     if(Ret_e == RC_OK)
     {
-        g_ESP8266_Info_s.ConnectType_e = f_ProtocolCom_Type_e;
-        Protocol_Cmd_str = c_ConnectionCmd_uac[f_ProtocolCom_Type_e] + String(",\"") + String(f_IP_Address_pc) + String("\",") + String(f_port_u16) + String("\r\n");
+        g_ESP8266_Info_s.ConnectType_e = ProtComType_e;
+        Protocol_Cmd_str = c_ConnectionCmd_uac[ProtComType_e] + String(",\"") + String(IP_Address_pc) + String("\",") + String(serverPort_u8) + String("\r\n");
         //Serial.print("SendCmd : ");
         //Serial.println(Protocol_Cmd_str);
         Ret_e = s_ESP_MakeCommand(Protocol_Cmd_str.c_str(), ESP_EXPECT_CONNECT, ESP_TIMEOUT_SEND);
@@ -309,9 +328,10 @@ t_eReturnCode ESP_Close_ProtocolCom(void)
 /******************************
 * ESP_Send_DataWithProtocolCom
 *******************************/
-t_eReturnCode ESP_SendData_WithProtocolCom(t_eESP_ExchangeDataMode f_DataMode_e, const char * f_dataToSend_pc)
+t_eReturnCode ESP_SendData_WithProtocolCom(const char * f_dataToSend_pc)
 {
     t_eReturnCode Ret_e = RC_OK;
+    t_eESP_ExchangeDataMode DataMode_e = c_ESPComProjectCfg_s.exchangeType_e;
     String dataESpCmd_str;
     String dataToSend_str = String(f_dataToSend_pc) + String("\r\n");
     t_uint16 lenghtData_u16;
@@ -328,7 +348,7 @@ t_eReturnCode ESP_SendData_WithProtocolCom(t_eESP_ExchangeDataMode f_DataMode_e,
     {
         Ret_e = RC_WARNING_WRONG_CONFIG;
     }
-    if(f_DataMode_e > ESP_EXCHANGE_DATA_NB)
+    if(DataMode_e > ESP_EXCHANGE_DATA_NB)
     {
         Ret_e = RC_ERROR_PARAM_INVALID;
     }
@@ -336,7 +356,7 @@ t_eReturnCode ESP_SendData_WithProtocolCom(t_eESP_ExchangeDataMode f_DataMode_e,
     if(Ret_e == RC_OK)
     {
         lenghtData_u16 = dataToSend_str.length();
-        switch(f_DataMode_e)
+        switch(DataMode_e)
         {
             case ESP_EXCHANGE_DATA_SERIAL:
             {
@@ -387,10 +407,9 @@ t_eReturnCode ESP_SendData_WithProtocolCom(t_eESP_ExchangeDataMode f_DataMode_e,
 /******************************
 * ESP_RcvData_WithProtocolCom
 *******************************/
-t_eReturnCode ESP_RcvData_WithProtocolCom(t_eESP_ExchangeDataMode f_RcvDataMode_e, const char *f_RcvData_pc)
+t_eReturnCode ESP_RcvData_WithProtocolCom(const char *f_RcvData_pc)
 {
     t_eReturnCode Ret_e = RC_OK;
-    t_uint32 ActualTime_u32;
     //t_uint8 LI_u8;
     char * answerExepctedFind_pc = (char*)NULL;
     char * checkstrcpy = (char*)NULL;
@@ -399,17 +418,12 @@ t_eReturnCode ESP_RcvData_WithProtocolCom(t_eESP_ExchangeDataMode f_RcvDataMode_
     {
         Ret_e = RC_ERROR_PTR_NULL;
     }
-    if(f_RcvDataMode_e > ESP_EXCHANGE_DATA_NB)
-    {
-        Ret_e = RC_ERROR_PARAM_INVALID;
-    }
     if(g_ESP8266_Info_s.ConnectState_e != ESP_PROTOCOL_STATE_CONNECTED)
     {
         Ret_e = RC_WARNING_WRONG_CONFIG;
     }
     if(Ret_e == RC_OK)
     {
-        ActualTime_u32 = millis();
         Ret_e = RC_WARNING_NO_OPERATION;
         // Used ReadBuffer function until there is something to read
         Ret_e = Modem_ReadBuffer(espResponse_ac);
@@ -444,20 +458,29 @@ t_eReturnCode ESP_RcvData_WithProtocolCom(t_eESP_ExchangeDataMode f_RcvDataMode_
 /*************************
 * ESP_Get_ProtocolCom_Cfg
 **************************/
-t_eReturnCode ESP_Get_ProtocolCom_Cfg(t_sESP_Cfg *f_ESP_Config_e)
+t_eReturnCode ESP_Get_ProtocolCom_Cfg(t_sESP_ComStatus *f_ESP_Config_e)
 {
     t_eReturnCode Ret_e = RC_OK;
-    if(f_ESP_Config_e == (t_sESP_Cfg *)NULL)
+    if(f_ESP_Config_e == (t_sESP_ComStatus *)NULL)
     {
         Ret_e = RC_ERROR_PTR_NULL;
     }
     if(Ret_e == RC_OK)
     {
+    
         Ret_e = s_ESP_GetInfo_StateESP();
         if(Ret_e == RC_OK)
         {
             *f_ESP_Config_e = g_ESP8266_Info_s;
-        }        
+        }
+        else 
+        {
+            f_ESP_Config_e->WifiCfg_s.WifiMode_e   = ESP_WIFI_MODE_UNDEFINED;
+            f_ESP_Config_e->WifiCfg_s.WifiStatus_e = ESP_WIFI_STATUS_DISCONNECTED;
+            f_ESP_Config_e->ConnectType_e           = ESP_CONNECTION_UNKNOWN;
+            f_ESP_Config_e->ConnectState_e          = ESP_PROTOCOL_STATE_DISCONNECT;
+            f_ESP_Config_e->SleepMode_e             = ESP_SLEEP_UNKNOWN;
+        }
     }
     DEBUG_PRINT("ESP_GetCfg retval : ");
     DEBUG_PRINTLN(Ret_e);
@@ -481,6 +504,9 @@ t_eReturnCode ESP_GetFirmwareVersion(const char *f_firmwareVersion_pc)
     DEBUG_PRINTLN(Ret_e);
     return Ret_e;
 }
+/***********************
+* ESP_SetSleepMode
+************************/
 t_eReturnCode ESP_SetSleepMode(t_eESP_SleepMode f_sleepMode_e, t_uint32 f_timeSleeping_u32)
 {
     t_eReturnCode Ret_e = RC_OK;

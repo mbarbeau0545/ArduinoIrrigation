@@ -1,15 +1,15 @@
 /*********************************************************************
- * @file        ACT_Cmd_IrrigValve_Courgette.h
+ * @file        SNS_SoilMoisture_Tomate.h
  * @brief       Template_BriefDescription.
  * @details     TemplateDetailsDescription.\n
  *
- * @author      audmba
+ * @author      AUDMBA
  * @date        jj/mm/yyyy
  * @version     1.0
  */
   
-#ifndef ACT_CMD_IRRIGVALVE_COURGETTE_H_INCLUDED
-#define ACT_CMD_IRRIGVALVE_COURGETTE_H_INCLUDED
+#ifndef SNS_SOILMOSTURE_TOMATE_H_INCLUDED
+#define SNS_SOILMOSTURE_TOMATE_H_INCLUDED
 
 
 
@@ -18,9 +18,9 @@
     // ********************************************************************
     // *                      Includes
     // ********************************************************************
-    #include "AppCommon/TypeCommon.h"
+    #include "./AppCommon/TypeCommon.h"
 
-    #include "ConfigSpecific/Arduino_ConfigSpecific.h"
+    #include "../Func_CfgSpecific/Arduino_ConfigSpecific.h"
 
     #include <Arduino.h>
     // ********************************************************************
@@ -34,55 +34,49 @@
     // ********************************************************************
     // *                      Prototypes
     // ********************************************************************
-        
+    /**
+    *
+    *	@brief
+    *	@details
+    *
+    *
+    *	@param[in] 
+    *	@param[out]
+    *	 
+    *
+    *
+    */
+    t_eReturnCode SNS_SoilMoisture_Tomate_Cfg(t_uint8 f_pin, t_eArduino_PinMode f_Pinmode_e);
+    /**
+    *
+    *	@brief
+    *	@details
+    *
+    *
+    *	@param[in] 
+    *	@param[out]
+    *	 
+    *
+    *
+    */
+    t_eReturnCode SNS_SoilMoisture_Tomate_Get(t_sint16 *f_value_s16);
+
     // ********************************************************************
     // *                      Variables
     // ********************************************************************
     
-    //****************************************************************************
-    //                      Public functions - Prototypes
     //********************************************************************************
-    /**
-    *
-    *	@brief
-    *	@details
-    *
-    *
-    *	@param[in] 
-    *	@param[out]
-    *	 
-    *
-    *
-    */
-    t_eReturnCode ACT_Cmd_IrrigValve_Courgette_Cfg(t_uint8 f_pin, t_eArduino_PinMode f_Pinmode);
-    /**
-    *
-    *	@brief
-    *	@details
-    *
-    *
-    *	@param[in] 
-    *	@param[out]
-    *	 
-    *
-    *
-    */
-    t_eReturnCode ACT_Cmd_IrrigValve_Courgette_Set(t_sint16 f_value);
-    /**
-    *
-    *	@brief
-    *	@details
-    *
-    *
-    *	@param[in] 
-    *	@param[out]
-    *	 
-    *
-    *
-    */
-    t_eReturnCode ACT_Cmd_IrrigValve_Courgette_Get(t_sint16 *f_value);
+    //                      Local functions - Prototypes
+    //********************************************************************************
 
-#endif // ACT_CMD_IRRIGVALVE_CAROTTE_H_INCLUDED           
+    //****************************************************************************
+    //                      Public functions - Implementation
+    //********************************************************************************
+
+    //********************************************************************************
+    //                      Local functions - Implementation
+    //********************************************************************************
+#endif // SNS_SOILMOSTURE_TOMATE_H_INCLUDED           
 //************************************************************************************
 // End of File
 //************************************************************************************
@@ -93,8 +87,8 @@
  *	@details
  *
  *
- *	@params[in] 
- *	@params[out]
+ *	@param[in] 
+ *	@param[out]
  *	 
  *
  *

@@ -1,5 +1,5 @@
 /*********************************************************************
- * @file        SNS_SoilMoisture_Courgette.h
+ * @file        SNS_SoilMoisture_Carotte.h
  * @brief       Template_BriefDescription.
  * @details     TemplateDetailsDescription.\n
  *
@@ -8,8 +8,8 @@
  * @version     1.0
  */
   
-#ifndef SNS_SOILMOSTURE_COURGETTE_H_INCLUDED
-#define SNS_SOILMOSTURE_COURGETTE_H_INCLUDED
+#ifndef SNS_SOILMOSTURE_CAROTTE_H_INCLUDED
+#define SNS_SOILMOSTURE_CAROTTE_H_INCLUDED
 
 
 
@@ -18,9 +18,9 @@
     // ********************************************************************
     // *                      Includes
     // ********************************************************************
-    #include "../AppCommon/TypeCommon.h"
+    #include "./AppCommon/TypeCommon.h"
 
-    #include "../ConfigSpecific/Arduino_ConfigSpecific.h"
+    #include "../Func_CfgSpecific/Arduino_ConfigSpecific.h"
     //#include "../ConfigSpecific/Sensors_ConfigSpecific.h"
 
     #include <Arduino.h>
@@ -47,7 +47,7 @@
     *
     *
     */
-    t_eReturnCode SNS_SoilMoisture_Courgette_Cfg(t_uint8 f_pin, t_eArduino_PinMode f_Pinmode_e);
+    t_eReturnCode SNS_SoilMoisture_Carotte_Cfg(t_uint8 f_pin, t_eArduino_PinMode f_Pinmode_e);
     /**
     *
     *	@brief
@@ -60,7 +60,7 @@
     *
     *
     */
-    t_eReturnCode SNS_SoilMoisture_Courgette_Get(t_sint16 *f_value_s16);
+    t_eReturnCode SNS_SoilMoisture_Carotte_Get(t_sint16 *f_value_s16);
 
     // ********************************************************************
     // *                      Variables
@@ -77,7 +77,7 @@
     //********************************************************************************
     //                      Local functions - Implementation
     //********************************************************************************
-#endif // SNS_SOILMOSTURE_COURGETTE_H_INCLUDED           
+#endif // SNS_SOILMOSTURE_CAROTTE_H_INCLUDED           
 //************************************************************************************
 // End of File
 //************************************************************************************
