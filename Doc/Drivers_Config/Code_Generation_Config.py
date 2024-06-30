@@ -154,9 +154,9 @@ class LoadConfig_FromExcel():
         for Sensor in ArrayList:
             generated_code_str += f"\t\tSNS_{str(Sensor[SENSOR_CODE]).upper()},\n"
         generated_code_str += "\n\t\tSNS_NUMBER,\n"
-        generated_code_str += "\t}t_eSNS_Sensors;\n\n"
+        generated_code_str += "\t}t_eSNSSPEC_Sensors;\n\n"
         #make c_SysActCfg_as 
-        generated_code_str += "\tstatic const t_sSNS_SysSnsCfg c_SysSnsCfg_as[SNS_NUMBER] = \n\t{\n"
+        generated_code_str += "\tstatic const t_sSNSSPEC_SysSnsCfg c_SysSnsCfg_as[SNS_NUMBER] = \n\t{\n"
         #make c_SysActCfg_as 
         for Sensor in ArrayList:
             generated_code_str += "\t\t{"

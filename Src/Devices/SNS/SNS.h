@@ -15,7 +15,7 @@
     // ********************************************************************
     #include "./AppCommon/TypeCommon.h"
 
-    #include "./ConfigSpecific/Func_CfgSpecific/Sensors_ConfigSpecific.h"
+    #include "./ConfigSpecific/Sensors/Sensors_CfgSpc.h"
 
     #include  <Arduino.h>
     // ********************************************************************
@@ -66,7 +66,7 @@
     *
     *
     */
-    t_eReturnCode SNS_Set_Cfg(t_eSNS_Sensors f_SNSName_e);
+    t_eReturnCode SNS_Set_Cfg(t_eSNSSPEC_Sensors f_SNSName_e);
 
 
     /**
@@ -81,7 +81,7 @@
     *
     *
     */
-    t_eReturnCode SNS_Get(t_eSNS_Sensors f_actuatorName_e, t_sint16 *f_SNSVal_s16);
+    t_eReturnCode SNS_Get(t_eSNSSPEC_Sensors f_actuatorName_e, t_sint16 *f_SNSVal_s16);
 #endif // ACT_H_INCLUDED
  
 //********************************************************************************

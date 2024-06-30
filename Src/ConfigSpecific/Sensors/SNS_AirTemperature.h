@@ -24,7 +24,7 @@
     // ********************************************************************
     #include "./AppCommon/TypeCommon.h"
 
-    #include "../Func_CfgSpecific/Arduino_ConfigSpecific.h"
+    #include "../HAL/Arduino_CfgSpec.h"
     #include "./ArduinoLib/DHT/DHT.h"
     #include <Arduino.h>
     // ********************************************************************

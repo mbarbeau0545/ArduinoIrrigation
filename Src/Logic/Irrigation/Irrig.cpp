@@ -151,7 +151,7 @@ static void s_Irrig_ResetBuffer(char f_buffer_ac[], t_uint16 f_len_u16);
  *
  *
  */
-static t_eReturnCode s_Logic_MasterConnection(t_eIrrig_CoState * f_CoState_e);
+static t_eReturnCode s_Irrig_MasterConnection(t_eIrrig_CoState * f_CoState_e);
 /**
  *
  *	@brief      Receive and Schedule the receive Task
@@ -243,6 +243,19 @@ static t_eReturnCode s_Irrig_ModeSendSNSVal(t_uint8 *f_counterProb_pu8);
  *
  */
 static t_eReturnCode s_Irrig_ModeWakeUp(t_uint8 *f_counterProb_pu8, t_eIrrig_CoState *f_ArdCostate_e);
+/**
+ *
+ *	@brief      Receive and Schedule the receive Task
+ *	@details
+ *
+ *
+ *	@param[in] 
+ *	@param[out]
+ *	 
+ *
+ *
+ */
+static t_eReturnCode s_Irrig_ModeSetWorkMode(t_uint8 *f_counterProb_pu8, t_eIrrig_CoState *f_ArdCostate_e);
 //****************************************************************************
 //                      Public functions - Implementation
 //********************************************************************************
@@ -252,12 +265,14 @@ static t_eReturnCode s_Irrig_ModeWakeUp(t_uint8 *f_counterProb_pu8, t_eIrrig_CoS
 t_eReturnCode LgcIrrig_Init(void)
 {
     t_eReturnCode Ret_e = RC_OK;
-    t_uint8 LI_u8 = (t_uint8)0;
-    t_uint8 TypeComNumber_u8 = (t_uint8)0;
     Ret_e = ACT_Init();
+    Serial.print("ACT init : ");
+    Serial.println(Ret_e);
     if(Ret_e == RC_OK)
     {
         g_ActuatorsInitialize_b = (t_bool)true;
+        Serial.print("SNS init : ");
+        Serial.println(Ret_e);
         Ret_e = SNS_Init();
     }
     if(Ret_e == RC_OK)
@@ -267,10 +282,11 @@ t_eReturnCode LgcIrrig_Init(void)
     }
     if(Ret_e == RC_OK)
     {
-        for(LI_u8 = (t_uint8)0 ; (LI_u8 < TypeComNumber_u8 && Ret_e == RC_OK) ; LI_u8++)
-        {
-            Ret_e = ArdCom_Init((t_eArdCom_TypeCom)LI_u8);
-        }
+
+        Ret_e = ArdCom_Init((t_eArdCom_TypeCom)c_ArduinoComUsed_e);
+        Serial.print("ArdCom init : ");
+        Serial.println(Ret_e);
+
     }
     if(Ret_e == RC_OK)
     {
@@ -310,7 +326,11 @@ t_eReturnCode LgcIrrig_Cyclic()
         {
             case IRRIG_ARDUINO_MODE_WAKEUP:
             {
-                s_Irrig_ModeWakeUp(&s_ctr_Problem_u8, &s_ArdCoState_e);
+                Ret_e = s_Irrig_ModeWakeUp(&s_ctr_Problem_u8, &s_ArdCoState_e);
+                if(Ret_e == RC_OK)
+                {
+                    g_ArduinoState_e = IRRIG_ARDUINO_MODE_ASK_TASK;
+                }
                 break;                    
             }
             case IRRIG_ARDUINO_MODE_SLEEP:
@@ -328,16 +348,28 @@ t_eReturnCode LgcIrrig_Cyclic()
             case IRRIG_ARDUINO_MODE_RCV_ACTUATORS_DATAS:
             {
                 Ret_e = s_Irrig_ModeRcvActData(&s_ctr_Problem_u8);
+                if(Ret_e == RC_OK)
+                {
+                    g_ArduinoState_e = IRRIG_ARDUINO_MODE_SET_ACTUATORS;
+                }
                 break;
             }
             case IRRIG_ARDUINO_MODE_SET_ACTUATORS:
             {
                 Ret_e = s_Irrig_ModeSetActData(&s_ctr_Problem_u8);
+                if(Ret_e == RC_OK)
+                {
+                    g_ArduinoState_e = IRRIG_ARDUINO_MODE_ASK_TASK;
+                }
                 break;
             }
             case IRRIG_ARDUINO_MODE_SEND_SENSORS_VALUES:
             {
                 Ret_e = s_Irrig_ModeSendSNSVal(&s_ctr_Problem_u8);
+                if(Ret_e == RC_OK)
+                {
+                    g_ArduinoState_e = IRRIG_ARDUINO_MODE_ASK_TASK;
+                }
                 break;
             }
             default: 
@@ -367,6 +399,8 @@ t_eReturnCode LgcIrrig_Cyclic()
 static t_eReturnCode s_Irrig_ModeWakeUp(t_uint8 *f_counterProb_pu8, t_eIrrig_CoState *f_ArdCostate_e)
 {
     t_eReturnCode Ret_e = RC_OK;
+    
+    
     //re_initialize all Actuators value to default
     //read the task, sheduled it and go to the dedicated mode 
     // if there isn't go to default and make counter 
@@ -377,12 +411,12 @@ static t_eReturnCode s_Irrig_ModeWakeUp(t_uint8 *f_counterProb_pu8, t_eIrrig_CoS
     }
     if(Ret_e == RC_OK)
     {
-        Ret_e = s_Logic_MasterConnection(f_ArdCostate_e);
-        Serial.print("Co State");
+        Ret_e = s_Irrig_MasterConnection(f_ArdCostate_e);
+        Serial.print("Co State ");
         Serial.println(*f_ArdCostate_e);
         if(Ret_e == RC_OK)
-        {
-            g_ArduinoState_e = IRRIG_ARDUINO_MODE_ASK_TASK;                        
+        {   
+            Ret_e = s_Irrig_ModeSetWorkMode(f_counterProb_pu8, f_ArdCostate_e);                       
         }
         else 
         {
@@ -433,7 +467,7 @@ static t_eReturnCode s_Irrig_ModeAskTask(t_uint8 *f_counterProb_pu8)
     else
     {                                        
         *f_counterProb_pu8 += 1;
-        g_ArduinoState_e = IRRIG_ARDUINO_MODE_WAKEUP;
+        // stay if ask Cmd 
     }
     return Ret_e;
 }
@@ -484,10 +518,6 @@ static t_eReturnCode s_Irrig_ModeRcvActData(t_uint8 *f_counterProb_pu8)
                                 Serial.println(g_actuatorsDuration_sa16[LI_u8]);
                             }
                             Serial.println(Ret_e);
-                            if(Ret_e == RC_OK)
-                            {
-                                g_ArduinoState_e = IRRIG_ARDUINO_MODE_SET_ACTUATORS;
-                            }
                         }
                         else
                         {
@@ -556,7 +586,6 @@ static t_eReturnCode s_Irrig_ModeSetActData(t_uint8 *f_counterProb_pu8)
                 s_actualTime_ActDuration_u32 = (t_uint32)0;
                 s_checkTimeDuration_b = (t_bool)false;
                 Ret_e = ArdCom_SendData(c_ArduinoComUsed_e, c_Arduino_ActTaskCompleted_pac);
-                g_ArduinoState_e = IRRIG_ARDUINO_MODE_WAKEUP;
             } 
         }
     }      
@@ -582,27 +611,30 @@ static t_eReturnCode s_Irrig_ModeSendSNSVal(t_uint8 *f_counterProb_pu8)
         sendDataToMaster_str = String(c_Arduino_SendSNSvalues_pac) + String(",");
         for(LI_u8 = 0 ; LI_u8 < (t_uint8)SNS_NUMBER ; LI_u8++)
         {
-            sendDataToMaster_str += String(LI_u8) + String(":") + String(g_sensorsValue_sa16[LI_u8]);
+            sendDataToMaster_str += String(LI_u8)+ String("_") + String(c_SensorsTypeCfg_ae[LI_u8]) + String(":") + String(g_sensorsValue_sa16[LI_u8]);
             if(LI_u8 != (SNS_NUMBER) - 1)
             {
                 sendDataToMaster_str += String(",");
             }
         }
         Ret_e = ArdCom_SendData(c_ArduinoComUsed_e, sendDataToMaster_str.c_str());
-        if(Ret_e == RC_OK)
-        {
-            g_ArduinoState_e = IRRIG_ARDUINO_MODE_ASK_TASK;
-        }
-        else
-        {
-            g_ArduinoState_e = IRRIG_ARDUINO_MODE_SEND_SENSORS_VALUES;
-        }
     }
     else
     {
         Ret_e = ArdCom_SendData(c_ArduinoComUsed_e, "ERROR WHEN TRYING GET DATA");
         *f_counterProb_pu8 += (t_uint8)1;
     }
+    return Ret_e;
+}
+/****************************
+* s_Irrig_ModeSetWorkMode
+****************************/
+static t_eReturnCode s_Irrig_ModeSetWorkMode(t_uint8 *f_counterProb_pu8, t_eIrrig_CoState *f_ArdCostate_e)
+{
+    t_eReturnCode Ret_e = RC_OK;
+    String Cmd_WorkMode_str;
+    Cmd_WorkMode_str = String("100:") + String(Ard_WorkMode_e);
+    Ret_e = ArdCom_SendData(c_ArduinoComUsed_e, Cmd_WorkMode_str.c_str());
     return Ret_e;
 }
 /****************************
@@ -697,11 +729,12 @@ static void s_Irrig_WakeUpMode(void)
     g_ArduinoState_e = IRRIG_ARDUINO_MODE_WAKEUP;
 }
 /****************************
-* s_Logic_MasterConnection
+* s_Irrig_MasterConnection
 ****************************/
-static t_eReturnCode s_Logic_MasterConnection(t_eIrrig_CoState * f_CoState_e)
+static t_eReturnCode s_Irrig_MasterConnection(t_eIrrig_CoState * f_CoState_e)
 {
     t_eReturnCode Ret_e = RC_OK;
+    Serial.println("MakeStartCom");
     Ret_e = ArdCom_StartCom(c_ArduinoComUsed_e);
     if(Ret_e == RC_OK)
     {
@@ -750,7 +783,7 @@ static t_eReturnCode s_Irrig_GetSensorsValues(t_sint16 f_SensorsContainer_as16[]
     for(LI_u8 = (t_uint8)0 ; (t_uint8)LI_u8 < SNS_NUMBER && Ret_e == RC_OK; LI_u8++ )
     {
         f_SensorsContainer_as16[LI_u8] = (t_sint16)0;
-        Ret_e = SNS_Get((t_eSNS_Sensors)LI_u8, &f_SensorsContainer_as16[LI_u8]);
+        Ret_e = SNS_Get((t_eSNSSPEC_Sensors)LI_u8, &f_SensorsContainer_as16[LI_u8]);
         if(Ret_e != RC_OK)
         {
             Serial.print(LI_u8);

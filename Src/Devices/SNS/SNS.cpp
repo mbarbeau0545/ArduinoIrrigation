@@ -66,7 +66,7 @@ t_eReturnCode SNS_Init(void)
 /****************************
 * SNS_Set_Cfg
 ****************************/
-t_eReturnCode SNS_Set_Cfg(t_eSNS_Sensors f_SNSName_e)
+t_eReturnCode SNS_Set_Cfg(t_eSNSSPEC_Sensors f_SNSName_e)
 {
     t_eReturnCode Ret_e = RC_OK;
     if(f_SNSName_e > SNS_NUMBER)
@@ -88,7 +88,7 @@ t_eReturnCode SNS_Set_Cfg(t_eSNS_Sensors f_SNSName_e)
  /****************************
 * SNS_Get
 ****************************/
- t_eReturnCode SNS_Get(t_eSNS_Sensors f_SNSName_e, t_sint16 *f_SNSVal_s16)
+ t_eReturnCode SNS_Get(t_eSNSSPEC_Sensors f_SNSName_e, t_sint16 *f_SNSVal_s16)
  {
     t_eReturnCode Ret_e = RC_OK;
     if(f_SNSName_e > SNS_NUMBER)

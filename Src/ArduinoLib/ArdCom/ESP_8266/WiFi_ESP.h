@@ -24,7 +24,6 @@
     // ********************************************************************
     // *                      Defines
     // ********************************************************************
-    #define BAUDRATE_WIFI 115200
 
 
     // Maximum size of a SSID
@@ -155,20 +154,6 @@
         t_eESP_SleepMode      SleepMode_e;
     }t_sESP_ComStatus;
 
-    typedef struct 
-    {
-        t_eESP_WifiMode             WifiMode_e;
-        t_eESP_ExchangeDataMode     exchangeType_e;
-        t_eESP_ConnectionType       ProtComType_e;
-        t_uint16                    baudRate_u16;
-        t_uint8                     rxPin_u8;
-        t_uint8                     txPin_u8;
-        const char *                serverID_pac;
-        t_uint8                     serverPrt_u8;
-        const char *                LiveBoxName_pac;
-        const char *                password_pac;
-    }t_sESP_ClientCfg;
-
 
     // ********************************************************************
     // *                      Prototypes
@@ -177,23 +162,7 @@
     // ********************************************************************
     // *                      Variables
     // *******************************************************************
-    /**< Wifi COnfiguration*/
-    const t_sESP_ClientCfg c_ESPComProjectCfg_s = {
-        .WifiMode_e         = ESP_WIFI_MODE_STATION,
-        .exchangeType_e     = ESP_EXCHANGE_DATA_SERIAL,
-        .ProtComType_e      = ESP_CONNECTION_TCP_CLIENT,
-        .baudRate_u16       = (t_uint16)BAUDRATE_WIFI, // Par exemple, BAUDRATE_WIFI peut être 115200
-        .rxPin_u8           = 2,
-        .txPin_u8           = 3,
-        .serverID_pac       = "192.168.1.26",    
-        .serverPrt_u8       = 80,
-        .LiveBoxName_pac    = "Livebox-0BB3",
-        .password_pac       = "7CF8844459F167816393050EE2",
-        
-    };
-    /*const char * SSID_Nantes =  "Livebox-E030";
-    const char * Password_Nantes =  "ZRvFTt7t2kfVaWrSYX";
-    const char * IP_AUDMBA_Nantes =  "192.168.1.26";*/
+    
     // ********************************************************************
     // *                      Public Functions
     // ********************************************************************  

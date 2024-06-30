@@ -20,7 +20,7 @@
     // ********************************************************************
     #include "./AppCommon/TypeCommon.h"
 
-    #include "../Func_CfgSpecific/Arduino_ConfigSpecific.h"
+    #include "../HAL/Arduino_CfgSpec.h"
     //#include "../ConfigSpecific/Sensors_ConfigSpecific.h"
 
     #include <Arduino.h>

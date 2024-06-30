@@ -68,7 +68,7 @@
    {
         t_cbSNS_cfg    * SnsCfg_pcb;
         t_cbSNS_GetVal * SnsGet_pcb;
-   }t_sSNS_SysSnsCfg;
+   }t_sSNSSPEC_SysSnsCfg;
 
     /* CAUTION : Automatic generated code section: Start */
 	typedef enum {
@@ -79,9 +79,9 @@
 		SNS_SOILMOISTURE_CAROTTE,
 
 		SNS_NUMBER,
-	}t_eSNS_Sensors;
+	}t_eSNSSPEC_Sensors;
 
-	static const t_sSNS_SysSnsCfg c_SysSnsCfg_as[SNS_NUMBER] = 
+	static const t_sSNSSPEC_SysSnsCfg c_SysSnsCfg_as[SNS_NUMBER] = 
 	{
 		//{	SNS_AirTemperature_Cfg                    	,SNS_AirTemperature_Get},
 		//{	SNS_AirMoisture_Cfg                       	,SNS_AirMoisture_Get},
@@ -91,11 +91,25 @@
 	};
 	/* CAUTION : Automatic generated code section: End */
 
+    // ADD in Code Generation 
+    typedef enum 
+    {
+        SNS_TYPE_TEMPERATURE,
+        SNS_TYPE_MOISTURE,
+        SNS_TYPE_PH,
 
+        SNS_TYPE_NB,
 
+    }t_eSNSSPEC_TypeSensors;
 
+    // ADD in Code Generation 
+    static const t_eSNSSPEC_TypeSensors c_SensorsTypeCfg_ae[SNS_NUMBER] = {
+        (t_eSNSSPEC_TypeSensors)SNS_TYPE_MOISTURE,
+        (t_eSNSSPEC_TypeSensors)SNS_TYPE_MOISTURE,
+        (t_eSNSSPEC_TypeSensors)SNS_TYPE_MOISTURE,
+    };
 
-
+    // ADD in Code Generation 
     static const t_uint8 c_SensorsPin_ua8[SNS_NUMBER] = {
                                            //(t_uint8)PIN_SNS_AIRTEMPERATURE,                     //SNS_AIRTEMPERATURE, 
                                            //(t_uint8)PIN_SNS_AIRMOISTURE,                        //SNS_AIRMOISTURE,
@@ -105,6 +119,7 @@
                                         };
                                         //10 & 11 already token by Wifi esp
 
+    // ADD in Code Generation 
     static const t_eArduino_PinMode c_Sensors_PinMode_ea[SNS_NUMBER] = {
                                                     //PINMODE_INPUT,                      //SNS_SOILMOISTURE, 
                                                     //PINMODE_INPUT,                      //SNS_SOILTEMP,

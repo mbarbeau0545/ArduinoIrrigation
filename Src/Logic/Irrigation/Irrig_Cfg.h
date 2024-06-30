@@ -40,8 +40,8 @@ typedef enum
 typedef enum 
 {
     IRRIG_MODE_SNS,
-    IRRIG_MODE_SNS_ACT,
     IRRIG_MODE_ACT,
+    IRRIG_MODE_SNS_ACT,
 
     IRRIG_MODE_NB,
 }t_eIrrig_ArduinoMode;
@@ -64,7 +64,7 @@ const char * c_Arduino_RcvActuatorsDuration_pac = "244";
 const char * c_Arduino_ActTaskCompleted_pac     = "200 : ok";
 
 /**<Arduino Mode Configuration */
-t_eIrrig_ArduinoMode ArdMode_e = IRRIG_MODE_SNS_ACT;
+t_eIrrig_ArduinoMode Ard_WorkMode_e = IRRIG_MODE_SNS;
 //********************************************************************************
 //                      Local functions - Prototypes
 //********************************************************************************

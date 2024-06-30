@@ -16,7 +16,7 @@
     // ********************************************************************
     #include "./AppCommon/TypeCommon.h"
 
-    #include "./ConfigSpecific/Func_CfgSpecific/Actuators_ConfigSpecific.h"
+    #include "./ConfigSpecific/Actuators/Actuators_CfgSpec.h"
 
     #include  <Arduino.h>
     // ********************************************************************

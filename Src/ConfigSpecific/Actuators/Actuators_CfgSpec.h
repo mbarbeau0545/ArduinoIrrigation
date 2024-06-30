@@ -22,9 +22,10 @@
 
     #include "./AppCommon/TypeCommon.h"
 
-    #include "../Actuators/ACT_Cmd_IrrigValve_Carotte.h"
-    #include "../Actuators/ACT_Cmd_IrrigValve_Courgette.h"
-    #include "../Actuators/ACT_Cmd_IrrigValve_Tomate.h"
+
+    #include "./ACT_Cmd_IrrigValve_Carotte.h"
+    #include "./ACT_Cmd_IrrigValve_Courgette.h"
+    #include "./ACT_Cmd_IrrigValve_Tomate.h"
     // ********************************************************************
     // *                      Defines
     // ********************************************************************
