@@ -61,28 +61,6 @@ void setup()
     t_eReturnCode Ret_e = RC_OK;
     
     Serial.begin(SERIAL_BAUDRATE);
-    // Variables SSID et mot de passe
-    const char* f_SSID_pc = "Livebox-0BB3";
-    const char* f_password_pc = "7CF8844459F167816393050EE2";
-    char ESP_SetWifiCmd_str[MODEM_MAX_BUFF_SIZE]; 
-    // Étape 1 : Vérifiez les valeurs individuelles
-    /*Serial.print("CMD_WRITE: ");
-    Serial.println(CMD_WRITE(_CWJAP_DEF));
-
-    Serial.print("SSID: ");
-    Serial.println(f_SSID_pc);
-
-    Serial.print("Password: ");
-    Serial.println(f_password_pc);
-
-
-
-
-
-    // Étape 3 : Concaténer progressivement
-    String ESP_SetWifiCmd_str = String(CMD_WRITE(_CWJAP_DEF))+ String("\"") + String(f_SSID_pc) + "\",\"" + String(f_password_pc) + "\"\r\n";*/
-
-
     Ret_e = LgcIrrig_Init();
     if(Ret_e != RC_OK)
     {

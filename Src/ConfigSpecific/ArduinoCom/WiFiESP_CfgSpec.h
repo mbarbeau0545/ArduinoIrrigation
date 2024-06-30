@@ -37,7 +37,7 @@
         t_uint8                     rxPin_u8;
         t_uint8                     txPin_u8;
         const char *                serverID_pac;
-        t_uint8                     serverPrt_u8;
+        const char *                serverPrt_pac;
         const char *                LiveBoxName_pac;
         const char *                password_pac;
     }t_sESP_ClientCfg;
@@ -59,8 +59,8 @@
         .baudRate_u32       = (t_uint32)BAUDRATE_WIFI, // Par exemple, BAUDRATE_WIFI peut être 115200
         .rxPin_u8           = 10,
         .txPin_u8           = 11,
-        .serverID_pac       = "192.168.1.26",    
-        .serverPrt_u8       = 80,
+        .serverID_pac       = "192.168.1.12",    
+        .serverPrt_pac       = "80",
         .LiveBoxName_pac    = "Livebox-E030",
         .password_pac       = "ZRvFTt7t2kfVaWrSYX",
         

@@ -47,7 +47,7 @@
     #endif
 
 
-    #define MODEM_TIMEOUT          10000            /* Maximum time waiting for device to respond*/
+    #define MODEM_TIMEOUT          7000            /* Maximum time waiting for device to respond*/
     #define MODEM_EXTENDED_TIMEOUT 60000
     #define MODEM_MAX_BUFF_SIZE    128              /*Max buffer size*/
     // ********************************************************************
@@ -124,7 +124,7 @@
     *
     *
     */
-   t_eReturnCode Modem_ReadBuffer(const char *f_rxBuffer_pc);
+   t_eReturnCode Modem_ReadBuffer(char *f_rxBuffer_pc);
 
 
 #endif // MODEM_H_INCLUDED           

@@ -18,7 +18,7 @@
 // ********************************************************************
 // *                      Defines
 // ********************************************************************
-
+#define ESP8266_END_MARKER "\r\nOK\r\n"
 // ********************************************************************
 // *                      Types
 // ********************************************************************
@@ -121,59 +121,58 @@ t_eReturnCode Modem_Write(const char *f_txbuffer_pc)
 /**********************
 * Modem_ReadBuffer
 ***********************/
-t_eReturnCode Modem_ReadBuffer(const char *f_rxBuffer_pc) {
+/**********************
+* Modem_ReadBuffer
+***********************/
+t_eReturnCode Modem_ReadBuffer(char *f_rxBuffer_pc) {
     t_eReturnCode Ret_e = RC_OK;
     char rcvData_c;
-    String RcvResponse_str; // Chaîne pour stocker la réponse de l'ESP8266
-    const char * RcvResponse_ac;
+    char RcvResponse_ac[MODEM_MAX_BUFF_SIZE]; 
+    t_uint8 idxResponse_u8 = 0;
     t_uint32 startTime_u32;
     char *checkmemcpy;
     
-    if (f_rxBuffer_pc == NULL) {
+    if (f_rxBuffer_pc == (const char *)NULL) 
+    {
         Ret_e = RC_ERROR_PTR_NULL;
     }
-    if (g_Modem_Initialized_b != (t_bool)true) {
+    if (g_Modem_Initialized_b != (t_bool)true) 
+    {
         Ret_e = RC_ERROR_MODULE_NOT_INITIALIZED;
     }
     if (Ret_e == RC_OK) 
     {
         g_esp8266Serial_pcl->flush(); // Vider le tampon de réception
         startTime_u32 = millis();
-        while (g_esp8266Serial_pcl->available()) 
+        while ((g_esp8266Serial_pcl->available() > (int)0) && (millis() - startTime_u32 < MODEM_TIMEOUT))
         {
-
-            if (RcvResponse_str.length() > MODEM_MAX_BUFF_SIZE || (millis() - startTime_u32) > MODEM_TIMEOUT) 
+            if (idxResponse_u8 > (MODEM_MAX_BUFF_SIZE - 2)) 
             {
-                Ret_e = RC_WARNING_LIMIT_REACHED;
                 break;
             }
             else
             {
                 rcvData_c = (char)g_esp8266Serial_pcl->read();
-                //Serial.print(rcvData_c);
-                RcvResponse_str += String((char)rcvData_c);
+                RcvResponse_ac[idxResponse_u8] = (char)rcvData_c;
+                idxResponse_u8 += (t_uint8)1;
                 //essaisResponse[index_u8++] = (char)rcvData_c;
                 //rcvData_c = (char)' ';
+                delay(5);
             }
-            delay(5);
         }
-        //RcvResponse_str += "\r\n";
-        //Affichage de la réponse en tant que chaîne UTF-8
-        //Serial.print("rcv :");
-        //RcvResponse_str += String("\n");
-        //Serial.println(RcvResponse_str);
-        //RcvResponse_str = String(essaisResponse)
-        //DEBUG_PRINT("Modem-RCVresponse: ");
-        //DEBUG_PRINTLN(RcvResponse.c_str());
-        if (Ret_e == RC_OK && RcvResponse_str.length() > (t_uint32)0) 
+        //if Ret_e = RC_WARNING_NOT_ALLOWED, return something 
+        if (idxResponse_u8 > (t_uint8)0) 
         {
-            RcvResponse_str += "\r\n";
-            RcvResponse_ac = (const char *)RcvResponse_str.c_str();
+            RcvResponse_ac[idxResponse_u8] = '\0';
             // Copie de la réponse dans le tampon de sortie
-            checkmemcpy = strcpy((char *)f_rxBuffer_pc, (const char *)RcvResponse_ac);
+            checkmemcpy = strncpy((char *)f_rxBuffer_pc, (const char *)RcvResponse_ac, MODEM_MAX_BUFF_SIZE);
             if ((char *)checkmemcpy != (char *)f_rxBuffer_pc) 
             {
                 Ret_e = RC_ERROR_COPY_FAILED;
+            }
+            else
+            {// make sure t o terminate as normal
+                f_rxBuffer_pc[MODEM_MAX_BUFF_SIZE - 1] = '\0';
             }
         }
         else
