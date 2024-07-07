@@ -15,6 +15,8 @@
 // ********************************************************************
 // *                      Defines
 // ********************************************************************
+//#define DHT_DEBUG
+
 #define MIN_INTERVAL 2000 // minimun intervall between to measure
 #define TIMEOUT UINT32_MAX //max time waiting for AM2302 to response
 #define MAX_TASK_REFUSE (t_uint8)100
@@ -89,10 +91,6 @@ t_eReturnCode DHT_Init(t_uint8 f_pin_u8, t_eDHT_SensorType f_Sensortype_e, t_uin
         g_sensorCfg_s.sendPort_u8  = (t_uint8)digitalPinToPort(f_pin_u8);
         g_sensorTime_s.maxCycles_u32 = microsecondsToClockCycles(1000);
         g_ModuleInitialized_b = (t_bool)true;
-        DEBUG_PRINT("[DHT_Init] : BitPin : ");
-        DEBUG_PRINT(g_sensorCfg_s.sendBit_u8,DEC)
-        DEBUG_PRINT("[DHT_Init] : RetVal : ");
-        DEBUG_PRINT(Ret_e,DEC)
     }
     return Ret_e;
 }
@@ -111,13 +109,10 @@ t_eReturnCode DHT_begin(t_uint8 f_pullTimeSec_u8)
         pinMode(g_sensorCfg_s.pin_u8, INPUT_PULLUP);
         g_sensorTime_s.lastReadTime_u32 = (t_uint32)(millis() - MIN_INTERVAL);
         g_sensorTime_s.pullTime_u8 = (t_uint8)f_pullTimeSec_u8;
-        DEBUG_PRINT("[DHT_begin] : MaxCycles :");
-        DEBUG_PRINTLN(g_sensorTime_s.maxCycles_u32, DEC);
     }
     else
     {
         Ret_e = RC_ERROR_MODULE_NOT_INITIALIZED;
-        DEBUG_PRINT("[DHT_begin] : Module not initialized");
     }
     return Ret_e;
 }
@@ -205,8 +200,6 @@ t_eReturnCode DHT_ReadTemperature(t_float32 *f_tempValue_pf32, t_bool f_forcedMo
     {
         g_ModuleInitialized_b = (t_bool)false;
     }
-    DEBUG_PRINTLN(F("Retval DHT_ReadTemperature:"));
-    DEBUG_PRINTLN(Ret_e);
     return Ret_e;
 }
 /**********************
@@ -276,8 +269,6 @@ t_eReturnCode DHT_ReadMoisture(t_float32 *f_moistValue_pf32, t_bool f_forcedMode
     {
         g_ModuleInitialized_b = (t_bool)false;
     }
-    DEBUG_PRINTLN(F("Retval DHT_ReadMoisture:"));
-    DEBUG_PRINTLN(Ret_e);
     return Ret_e;
 }
 /**********************
@@ -368,14 +359,12 @@ t_eReturnCode DHT_ReadSensor(t_bool *f_lastResult_b ,t_bool f_forcedMode_b)
             //ExpectPulseValue_u32 = DHT_ExpectPulse(LOW);
             if(Ret_e == RC_OK && ExpectPulseValue_u32 == TIMEOUT)
             {
-                DEBUG_PRINTLN(F("DHT timeout waiting for start signal low pulse."));
                 *f_lastResult_b = false;
             }
             Ret_e = DHT_ExpectPulse(HIGH, &ExpectPulseValue_u32);
             //ExpectPulseValue_u32 = DHT_ExpectPulse(HIGH);
             if(Ret_e == RC_OK && ExpectPulseValue_u32 == TIMEOUT)
             {
-                DEBUG_PRINTLN(F("DHT timeout waiting for start signal high pulse."));
                 *f_lastResult_b = false;
             }
             else
@@ -395,17 +384,12 @@ t_eReturnCode DHT_ReadSensor(t_bool *f_lastResult_b ,t_bool f_forcedMode_b)
                     //cycles_ua32[LI_U8+1] = DHT_ExpectPulse(HIGH);
                     Ret_e = DHT_ExpectPulse(LOW, &cycles_ua32[LI_U8]);
                     Ret_e = DHT_ExpectPulse(HIGH, &cycles_ua32[LI_U8 + (t_uint8)1]);
-
-                
                 }
-                DEBUG_PRINT("LI_U8 :")
-                DEBUG_PRINTLN(LI_U8)
                 // Timing critical code is now complete
                 // Inspect pulses and determine which ones are 0 (high state cycle count < low
                 // state cycle count), or 1 (high state cycle count > low state cycle count).
                 if(Ret_e == RC_OK)
                 {
-                    DEBUG_PRINT("Read 40 bits fine.")
                     for(LI_U8 = 0 ; LI_U8 < (t_uint8)40 ; ++LI_U8)
                     {
                         lowCycles_u32 = cycles_ua32[2 * LI_U8];
@@ -437,7 +421,6 @@ t_eReturnCode DHT_ReadSensor(t_bool *f_lastResult_b ,t_bool f_forcedMode_b)
                     else
                     {
                         Ret_e = RC_ERROR_WRONG_RESULT;
-                        DEBUG_PRINTLN("DHT checksum failure!");
                         *f_lastResult_b = (t_bool)false;
                     }
                 }
@@ -452,7 +435,7 @@ t_eReturnCode DHT_ReadSensor(t_bool *f_lastResult_b ,t_bool f_forcedMode_b)
         DEBUG_PRINTLN(cycles_ua32[LI_U8])
         DEBUG_PRINTLN(cycles_ua32[LI_U8 + 1])
     }
-    #endif
+    
     DEBUG_PRINTLN(F("Received from DHT:"));
     DEBUG_PRINT(g_dataSensor_ua8[0], HEX);
     DEBUG_PRINT(F(", "));
@@ -466,6 +449,7 @@ t_eReturnCode DHT_ReadSensor(t_bool *f_lastResult_b ,t_bool f_forcedMode_b)
     DEBUG_PRINT(F(" =? "));
     DEBUG_PRINTLN(F("Retval DHT_ReadSensor:"));
     DEBUG_PRINTLN(Ret_e);
+    #endif
     return Ret_e;
 }
 //********************************************************************************

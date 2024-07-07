@@ -31,7 +31,7 @@
     typedef enum
     {
         ARDCOM_WIFI,
-        ARDCOM_BT,
+        ARDCOM_BLUETOOTH,
         ARDCOM_LORA,
         ARDCOM_SPI,
 
@@ -147,14 +147,12 @@
     static const t_sArdCom_SysComCfg c_SysArdComCfg_as[ARDCOM_NB] = 
     {
         {ESP_Init       ,ESP_Close              ,ESP_Start_ProtocolCom       ,ESP_Close_ProtocolCom       ,ESP_RcvData_WithProtocolCom       ,ESP_SendData_WithProtocolCom},  //ARDCOM_WIFI,
-        {NULL           ,NULL                   ,NULL                        ,NULL                        ,NULL                              ,NULL                        },  //ARDCOM_BT
+        {NULL           ,NULL                   ,NULL                        ,NULL                        ,NULL                              ,NULL                        },  //ARDCOM_BLUETOOTH
         {NULL           ,NULL                   ,NULL                        ,NULL                        ,NULL                              ,NULL                        },  //ARDCOM_LORA
         {NULL           ,NULL                   ,NULL                        ,NULL                        ,NULL                              ,NULL                        },  //ARDCOM_SPI
     };
     /* CAUTION : Automatic generated code section: Start */
-
-    const t_eArdCom_TypeCom c_ArduinoComUsed_e = ARDCOM_WIFI;
-
+	const t_eArdCom_TypeCom c_ArduinoComUsed_e = ARDCOM_WIFI;
     /* CAUTION : Automatic generated code section: End */
     //****************************************************************************
     //                      Public functions - Prototypes

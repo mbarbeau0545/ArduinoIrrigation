@@ -55,9 +55,9 @@ t_eReturnCode ACT_Init(void)
             Ret_e = (c_SysActCfg_as[LI_u8].ActCfg_pcb)(c_ActuatorsPin_ua8[LI_u8], c_Actuators_PinMode_ea[LI_u8]);
             if(Ret_e != RC_OK)
             {
-                Serial.println("Problem in CfgActuator");
-                Serial.println(Ret_e);
-                Serial.println(LI_u8);
+                DEBUG_PRINTLN("Problem in CfgActuator");
+                DEBUG_PRINTLN(Ret_e);
+                DEBUG_PRINTLN(LI_u8);
             }
         }    
     }
@@ -79,9 +79,9 @@ t_eReturnCode ACT_Set_Cfg(t_eACT_Actuators f_actuatorName_e)
         Ret_e = (c_SysActCfg_as[f_actuatorName_e].ActCfg_pcb)(c_ActuatorsPin_ua8[f_actuatorName_e], c_Actuators_PinMode_ea[f_actuatorName_e]);
         if(Ret_e != RC_OK)
         {
-            Serial.println("Problem in ACT_Set_Cfg");
-            Serial.print(f_actuatorName_e);
-            Serial.println(Ret_e);
+            DEBUG_PRINTLN("Problem in ACT_Set_Cfg");
+            DEBUG_PRINT(f_actuatorName_e);
+            DEBUG_PRINTLN(Ret_e);
         } 
     }
     return Ret_e;
@@ -101,9 +101,9 @@ t_eReturnCode ACT_Set_Cfg(t_eACT_Actuators f_actuatorName_e)
         Ret_e = (c_SysActCfg_as[f_actuatorName_e].ActSetVal_pcb)(f_ActVal_s16);
         if(Ret_e != RC_OK)
         {
-            Serial.println("Problem in ACT_Set");
-            Serial.print(f_actuatorName_e);
-            Serial.println(Ret_e);
+            DEBUG_PRINTLN("Problem in ACT_Set");
+            DEBUG_PRINT(f_actuatorName_e);
+            DEBUG_PRINTLN(Ret_e);
         } 
     }
     return Ret_e;
@@ -123,9 +123,9 @@ t_eReturnCode ACT_Set_Cfg(t_eACT_Actuators f_actuatorName_e)
         Ret_e = (c_SysActCfg_as[f_actuatorName_e].ActGetVal_pcb)(f_ActVal_s16);
         if(Ret_e != RC_OK)
         {
-            Serial.println("Problem in ACT_Get");
-            Serial.print(f_actuatorName_e);
-            Serial.println(Ret_e);
+            DEBUG_PRINTLN("Problem in ACT_Get");
+            DEBUG_PRINT(f_actuatorName_e);
+            DEBUG_PRINTLN(Ret_e);
         } 
     }
     return Ret_e;

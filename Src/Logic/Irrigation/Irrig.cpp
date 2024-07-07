@@ -272,13 +272,13 @@ t_eReturnCode LgcIrrig_Init(void)
 {
     t_eReturnCode Ret_e = RC_OK;
     Ret_e = ACT_Init();
-    Serial.print("ACT init : ");
-    Serial.println(Ret_e);
+    DEBUG_PRINT("ACT init : ");
+    DEBUG_PRINTLN(Ret_e);
     if(Ret_e == RC_OK)
     {
         g_ActuatorsInitialize_b = (t_bool)true;
-        Serial.print("SNS init : ");
-        Serial.println(Ret_e);
+        DEBUG_PRINT("SNS init : ");
+        DEBUG_PRINTLN(Ret_e);
         Ret_e = SNS_Init();
     }
     if(Ret_e == RC_OK)
@@ -290,13 +290,13 @@ t_eReturnCode LgcIrrig_Init(void)
     {
 
         Ret_e = ArdCom_Init((t_eArdCom_TypeCom)c_ArduinoComUsed_e);
-        Serial.print("ArdCom init : ");
-        Serial.println(Ret_e);
+        DEBUG_PRINT("ArdCom init : ");
+        DEBUG_PRINTLN(Ret_e);
 
     }
     if(Ret_e == RC_OK)
     {
-        Serial.println("LogicIrrig done");
+        DEBUG_PRINTLN("LogicIrrig done");
 
     }
     return Ret_e;
@@ -311,8 +311,8 @@ t_eReturnCode LgcIrrig_Cyclic()
     static t_uint8 s_ctr_Problem_u8 = (t_uint8)0;
     static t_uint32 s_actualTime_CoStatue_u32 = millis();
  
-    Serial.print("Arduino state : ");
-    Serial.println(g_ArduinoState_e);
+    DEBUG_PRINT("Arduino state : ");
+    DEBUG_PRINTLN(g_ArduinoState_e);
 
     if(g_SensorsInitialize_b != (t_bool)true || g_ActuatorsInitialize_b != (t_bool)true)
     {
@@ -321,7 +321,7 @@ t_eReturnCode LgcIrrig_Cyclic()
     if(Ret_e == RC_OK)
     {
         // check if we have to actualize WifiStatue & Protocol statue
-        /*Serial.println("here");
+        /*DEBUG_PRINTLN("here");
         if((millis()  - s_actualTime_CoStatue_u32) > (t_uint32)MAIN_CHECK_CONNECT_STATUE)
         {
             Ret_e = ESP_Get_ProtocolCom_Cfg(&s_ESP_Cfg_s);
@@ -339,7 +339,7 @@ t_eReturnCode LgcIrrig_Cyclic()
             }
             case IRRIG_ARDUINO_MODE_SLEEP:
             {//prepare and set the sleep
-                Serial.println("About to go to sleep");
+                DEBUG_PRINTLN("About to go to sleep");
                 delay(1000);
                 s_Irrig_SleepMode();
                 break;
@@ -384,15 +384,15 @@ t_eReturnCode LgcIrrig_Cyclic()
         }
         if(g_counterProb_u8 > MAIN_ARDUINO_MAX_ERROR)
         {
-            Serial.println("reset WatchDogs");
+            DEBUG_PRINTLN("reset WatchDogs");
             //Reset Arduino using WatchDogs
             //wdt_enable(WDTO_15MS);
             delay(150);
         }
         
     }
-    Serial.print("Cyclic Value : ");
-    Serial.println(Ret_e);
+    DEBUG_PRINT("Cyclic Value : ");
+    DEBUG_PRINTLN(Ret_e);
     return Ret_e;
 }
 
@@ -411,8 +411,8 @@ static t_eReturnCode s_Irrig_ModeWakeUp(void)
     //Make Wifi and TCP connection active
 
     Ret_e = s_Irrig_MasterConnection();
-    Serial.print("Co State ");
-    Serial.println(g_ArdRaspCo_e);
+    DEBUG_PRINT("Co State ");
+    DEBUG_PRINTLN(g_ArdRaspCo_e);
     if(Ret_e == RC_OK)
     {   
         Ret_e = s_Irrig_ModeSetWorkMode();                       
@@ -432,15 +432,15 @@ static t_eReturnCode s_Irrig_ModeAskTask(void)
     t_eReturnCode Ret_e = RC_OK;
     char RcvServerData_ac[MODEM_MAX_BUFF_SIZE];
     s_Irrig_ResetBuffer(RcvServerData_ac, MODEM_MAX_BUFF_SIZE);
-    Serial.print("Set task");
+    DEBUG_PRINT("Set task");
     Ret_e = s_Irrig_GetTask_FromMaster(RcvServerData_ac);
-    Serial.println(Ret_e);
-    Serial.print("Rcv :");
-    Serial.println(RcvServerData_ac);
+    DEBUG_PRINTLN(Ret_e);
+    DEBUG_PRINT("Rcv :");
+    DEBUG_PRINTLN(RcvServerData_ac);
     //see if Master wants sensors values or cmd relay  
     if(strstr(RcvServerData_ac, c_Arduino_SendSNSvalues_pac) != (char *)NULL)
     {
-        Serial.print("Send sensors values");
+        DEBUG_PRINT("Send sensors values");
         g_ArduinoState_e = IRRIG_ARDUINO_MODE_SEND_SENSORS_VALUES;
     }
     else if(strstr(RcvServerData_ac, c_Arduino_SetActuators_pac) != (char *)NULL)
@@ -450,7 +450,7 @@ static t_eReturnCode s_Irrig_ModeAskTask(void)
     }                        
     else 
     {
-        Serial.println("Cmd Server not found");
+        DEBUG_PRINTLN("Cmd Server not found");
         g_counterProb_u8 += 1;
         g_ArduinoState_e = IRRIG_ARDUINO_MODE_ASK_TASK;
     }
@@ -468,7 +468,7 @@ static t_eReturnCode s_Irrig_ModeRcvActData(void)
     Ret_e = ArdCom_SendData(c_ArduinoComUsed_e, c_Arduino_RcvActuatorsValues_pac);
     if(Ret_e == RC_OK)
     {
-        Serial.println("Wait for Actuators value ");
+        DEBUG_PRINTLN("Wait for Actuators value ");
         delay(ARDUINO_WAIT_ACT_EXCHANGE);
         Ret_e = ArdCom_RcvData(c_ArduinoComUsed_e, RcvServerData_ac);
         // chekc if ID correspond to what exepected i.e. the actuators values
@@ -476,28 +476,28 @@ static t_eReturnCode s_Irrig_ModeRcvActData(void)
         if( strstr(RcvServerData_ac, c_Arduino_RcvActuatorsValues_pac) != (char *)NULL)
         {// we rcv actuatorsd values
             // check here
-            Serial.print("Exctraction actuators value");
+            DEBUG_PRINT("Exctraction actuators value");
             Ret_e = s_Irrig_ExtractMasterCmd((const char *)RcvServerData_ac, (t_uint16)strlen(RcvServerData_ac),g_actuatorsValue_sa16);
-            Serial.println(Ret_e);
+            DEBUG_PRINTLN(Ret_e);
             if(Ret_e == RC_OK)
             {// we now receive Actuators duration
                 s_Irrig_ResetBuffer(RcvServerData_ac,MODEM_MAX_BUFF_SIZE);
                 Ret_e = ArdCom_SendData(c_ArduinoComUsed_e, c_Arduino_RcvActuatorsDuration_pac);
-                Serial.println(Ret_e);
+                DEBUG_PRINTLN(Ret_e);
                 if(Ret_e == RC_OK)
                 {
-                    Serial.println("Wait for Actuators duration");
+                    DEBUG_PRINTLN("Wait for Actuators duration");
                     delay(ARDUINO_WAIT_ACT_EXCHANGE);
                     Ret_e = ArdCom_RcvData(c_ArduinoComUsed_e, RcvServerData_ac);
                     if(strstr(RcvServerData_ac, c_Arduino_RcvActuatorsDuration_pac) != (char * )NULL)
                     {// check rcv actuators duration ok 
-                        Serial.println("Exctraction actuators duration");
+                        DEBUG_PRINTLN("Exctraction actuators duration");
                         Ret_e = s_Irrig_ExtractMasterCmd((const char *)RcvServerData_ac,(t_uint16)strlen(RcvServerData_ac), g_actuatorsDuration_sa16);
                         for(LI_u8 = 0 ; LI_u8 < ACT_NUMBER ; LI_u8++)
                         {
-                            Serial.println(g_actuatorsDuration_sa16[LI_u8]);
+                            DEBUG_PRINTLN(g_actuatorsDuration_sa16[LI_u8]);
                         }
-                        Serial.println(Ret_e);
+                        DEBUG_PRINTLN(Ret_e);
                     }
                     else
                     {
@@ -544,8 +544,8 @@ static t_eReturnCode s_Irrig_ModeSetActData(void)
         {
             if(millis() - s_actualTime_ActDuration_u32 > ((t_uint32)g_actuatorsDuration_sa16[LI_u8] * (t_uint32)SEC_IN_MIN))
             {// cut the irrigation valve 
-                Serial.println((millis() - s_actualTime_ActDuration_u32));
-                Serial.println(g_actuatorsDuration_sa16[LI_u8]* (t_uint32)SEC_IN_MIN);
+                DEBUG_PRINTLN((millis() - s_actualTime_ActDuration_u32));
+                DEBUG_PRINTLN(g_actuatorsDuration_sa16[LI_u8]* (t_uint32)SEC_IN_MIN);
                 Ret_e = ACT_Set((t_eACT_Actuators)LI_u8, (t_sint16)0);
                 if (Ret_e != RC_OK)
                 {
@@ -569,27 +569,45 @@ static t_eReturnCode s_Irrig_ModeSetActData(void)
 /****************************
 * s_Irrig_ModeSendSNSVal
 ****************************/
+/****************************
+* s_Irrig_ModeSendSNSVal
+****************************/
 static t_eReturnCode s_Irrig_ModeSendSNSVal(void)
 {
     t_eReturnCode Ret_e = RC_OK;
     t_uint8 LI_u8 = (t_uint8)0;
-    String sendDataToMaster_str = "";
+    t_sint16 SNSVal_as16[SNS_NUMBER];
+    char sendDataToMaster_ac[MODEM_MAX_BUFF_SIZE];
+    char SNSNidx_ac[3]; // store the char number of SNS
+    char SNSType_ac[3]; // store the char Sensors type
+    char SNSVal_ac[MODEM_MAX_BUFF_SIZE/8]; //Store the char Sensors values
+    
     //IF here send sensors values and go to sleep or make other things
-    Serial.println("Get sensor value");
+    DEBUG_PRINTLN("Get sensor value");
 
-    Ret_e = s_Irrig_GetSensorsValues(g_sensorsValue_sa16);
+    Ret_e = s_Irrig_GetSensorsValues(SNSVal_as16);
     if(Ret_e == RC_OK)
     {
-        sendDataToMaster_str = String(c_Arduino_SendSNSvalues_pac) + String(",");
+        strcpy(sendDataToMaster_ac, c_Arduino_SendACTValues_pac);
+        strcat(sendDataToMaster_ac, ",");
         for(LI_u8 = 0 ; LI_u8 < (t_uint8)SNS_NUMBER ; LI_u8++)
         {
-            sendDataToMaster_str += String(LI_u8)+ String("_") + String(c_SensorsTypeCfg_ae[LI_u8]) + String(":") + String(g_sensorsValue_sa16[LI_u8]);
+            snprintf(SNSNidx_ac, sizeof(SNSNidx_ac), "%d", LI_u8);
+            snprintf(SNSVal_ac,  sizeof(SNSVal_ac),  "%d", SNSVal_as16[LI_u8]);
+            snprintf(SNSType_ac, sizeof(SNSType_ac), "%d", c_SensorsTypeCfg_ae[LI_u8]);
+
+            strcat(sendDataToMaster_ac, SNSNidx_ac);
+            strcat(sendDataToMaster_ac, "_");
+            strcat(sendDataToMaster_ac, SNSType_ac);
+            strcat(sendDataToMaster_ac, ":");
+            strcat(sendDataToMaster_ac, SNSVal_ac);
+
             if(LI_u8 != (SNS_NUMBER) - 1)
             {
-                sendDataToMaster_str += String(",");
+                strcat(sendDataToMaster_ac,",");
             }
         }
-        Ret_e = ArdCom_SendData(c_ArduinoComUsed_e, sendDataToMaster_str.c_str());
+        Ret_e = ArdCom_SendData(c_ArduinoComUsed_e, sendDataToMaster_ac);
     }
     else
     {
@@ -686,7 +704,7 @@ static void s_Irrig_ResetBuffer(char f_buffer_ac[], t_uint16 f_len_u16)
 ****************************/
 static void s_Irrig_SleepMode(void)
 {
-    Serial.println("Go to sleepMode");
+    DEBUG_PRINTLN("Go to sleepMode");
     delay(10000);
     digitalWrite(LED_BUILTIN,LOW);
     //Wake up here 
@@ -697,7 +715,7 @@ static void s_Irrig_SleepMode(void)
 static void s_Irrig_WakeUpMode(void)
 {
     digitalWrite(LED_BUILTIN,HIGH);
-    Serial.println("Just waking up");
+    DEBUG_PRINTLN("Just waking up");
     g_ArduinoState_e = IRRIG_ARDUINO_MODE_WAKEUP;
 }
 /****************************
@@ -706,7 +724,7 @@ static void s_Irrig_WakeUpMode(void)
 static t_eReturnCode s_Irrig_MasterConnection(void)
 {
     t_eReturnCode Ret_e = RC_OK;
-    Serial.println("MakeStartCom");
+    DEBUG_PRINTLN("MakeStartCom");
     Ret_e = ArdCom_StartCom(c_ArduinoComUsed_e);
     if(Ret_e == RC_OK)
     {
@@ -758,9 +776,9 @@ static t_eReturnCode s_Irrig_GetSensorsValues(t_sint16 f_SensorsContainer_as16[]
         Ret_e = SNS_Get((t_eSNSSPEC_Sensors)LI_u8, &f_SensorsContainer_as16[LI_u8]);
         if(Ret_e != RC_OK)
         {
-            Serial.print(LI_u8);
-            Serial.println(": Something's off, RetVal");
-            Serial.println(Ret_e);
+            DEBUG_PRINT(LI_u8);
+            DEBUG_PRINTLN(": Something's off, RetVal");
+            DEBUG_PRINTLN(Ret_e);
         }
     }
     return Ret_e;

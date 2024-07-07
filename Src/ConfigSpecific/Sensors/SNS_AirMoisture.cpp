@@ -72,8 +72,6 @@ t_eReturnCode SNS_AirMoisture_Cfg(t_uint8 f_pin_u8, t_eArduino_PinMode f_pinMode
             Ret_e = RC_ERROR_MODULE_NOT_INITIALIZED;
         }
     }
-    DEBUG_PRINT("RetCode [SNS_AirMoisture_Cfg] :")
-    DEBUG_PRINTLN(Ret_e)
     return Ret_e;
 }
 /*************************
@@ -98,8 +96,6 @@ t_eReturnCode SNS_AirMoisture_Get(t_sint16 *f_value_s16)
         
         *f_value_s16 = (t_sint16)valueReceive_f32;
     }  
-    DEBUG_PRINT("RetCode [SNS_AirMoisture_Get] :")
-    DEBUG_PRINTLN(Ret_e) 
     return Ret_e;
 }
 //********************************************************************************

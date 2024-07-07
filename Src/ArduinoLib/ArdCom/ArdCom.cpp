@@ -119,7 +119,7 @@ t_eReturnCode ArdCom_GetComCfg(t_eArdCom_TypeCom f_TypeCom_e, t_uArdCom_GetCfg *
                 Ret_e = ESP_Get_ProtocolCom_Cfg(&(f_ComCfg_u->ESP_CfgStatus));
                 break;
             }
-            case ARDCOM_BT:
+            case ARDCOM_BLUETOOTH:
             case ARDCOM_LORA:
             case ARDCOM_SPI:
             case ARDCOM_NB:

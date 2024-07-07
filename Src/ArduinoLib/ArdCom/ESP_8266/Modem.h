@@ -23,30 +23,6 @@
     // ********************************************************************
     // *                      Defines
     // ********************************************************************
-    //#define SERIAL_ESP_DEBUG
-
-    // Définition des macros pour le débogage
-    #define DEBUG_PRINTER                                                          \
-        Serial /**< Define where debug output will be printed.                       \
-        */
-
-    #ifdef SERIAL_ESP_DEBUG
-    #define DEBUG_PRINT(...)                                                       \
-    { DEBUG_PRINTER.print(__VA_ARGS__); }
-    #define DEBUG_PRINTLN(...)                                                     \
-    { DEBUG_PRINTER.println(__VA_ARGS__); }
-    #define DEBUG_DELAY(x) delay(x)                                                 
-    #else
-    #define DEBUG_PRINT(...)                                                       \
-    {} // Placeholder si le débogage est désactivé
-    #define DEBUG_PRINTLN(...)                                                     \
-    {} // Placeholder si le débogage est désactivé
-    #define DEBUG_DELAY(...)                                                        \
-    {} // Placeholder si le débogage est désactivé
-    
-    #endif
-
-
     #define MODEM_TIMEOUT          7000            /* Maximum time waiting for device to respond*/
     #define MODEM_EXTENDED_TIMEOUT 60000
     #define MODEM_MAX_BUFF_SIZE    128              /*Max buffer size*/

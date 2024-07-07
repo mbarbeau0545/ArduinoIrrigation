@@ -58,6 +58,7 @@ typedef enum
 
 const char * c_Arduino_AskCmd_pac               = "999";
 const char * c_Arduino_SendSNSvalues_pac        = "111";
+const char * c_Arduino_SendACTValues_pac        = "122";
 const char * c_Arduino_SetActuators_pac         = "200";
 const char * c_Arduino_RcvActuatorsValues_pac   = "222";
 const char * c_Arduino_RcvActuatorsDuration_pac = "244";

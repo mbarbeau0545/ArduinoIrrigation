@@ -1,0 +1,21 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "PlatformIO",
+			"task": "Full Clean (uno)",
+			"problemMatcher": [
+				"$platformio"
+			],
+			"label": "PlatformIO: Full Clean (uno)"
+		},
+		{
+			"type": "PlatformIO",
+			"task": "Pre-Debug (uno)",
+			"problemMatcher": [
+				"$platformio"
+			],
+			"label": "PlatformIO: Pre-Debug (uno)"
+		}
+	]
+}

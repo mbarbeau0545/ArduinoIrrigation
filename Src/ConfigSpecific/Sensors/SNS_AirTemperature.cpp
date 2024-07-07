@@ -72,8 +72,6 @@ t_eReturnCode SNS_AirTemperature_Cfg(t_uint8 f_pin_u8, t_eArduino_PinMode f_pinM
             Ret_e = RC_ERROR_MODULE_NOT_INITIALIZED;
         }
     }
-    DEBUG_PRINT("RetCode [SNS_AirTemp_Cfg] :")
-    DEBUG_PRINTLN(Ret_e)
     return Ret_e;
     
 }
@@ -98,8 +96,6 @@ t_eReturnCode SNS_AirTemperature_Get(t_sint16 *f_value_s16)
         Ret_e = DHT_ReadTemperature(&valueReceive_f32);
         *f_value_s16 = (t_sint16)valueReceive_f32;
     }  
-    DEBUG_PRINT("RetCode [SNS_AirTemp_Get] :")
-    DEBUG_PRINTLN(Ret_e) 
     return Ret_e;
 }
 //********************************************************************************

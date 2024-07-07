@@ -12,6 +12,7 @@
 // *                      Includes
 // ********************************************************************
 #include "ConfigSpecific/ArduinoCom/WiFiESP_CfgSpec.h"
+#include "ConfigSpecific/HAL/Arduino_CfgSpec.h"
 #include "Wifi_ESP8266_Cmd.h"
 
 #include <stdio.h>
@@ -129,22 +130,22 @@ void printWithVisibleNewlines(const char* str) {
     while (*str) {
         if (*str == '\n') 
         {
-            Serial.print("\\n");
+            DEBUG_PRINT("\\n");
         } else if (*str == '\r') 
         {
-            Serial.print("\\r");
+            DEBUG_PRINT("\\r");
         }
         else if (*str == '\0') 
         {
-            Serial.print("\\0");
+            DEBUG_PRINT("\\0");
         } 
         else 
         {
-            Serial.print(*str);
+            DEBUG_PRINT(*str);
         }
         str++;
     }
-    Serial.println(); // Move to the next line after printing the entire string
+    DEBUG_PRINTLN(); // Move to the next line after printing the entire string
 }
 //******************************************************************************** 
 //                      Public functions - Implementation
@@ -173,8 +174,6 @@ void printWithVisibleNewlines(const char* str) {
     {
         g_ESP_ModemCom_Initialized_b = (t_bool)false;
     }
-    DEBUG_PRINT("ESP_Init retval : ");
-    DEBUG_PRINTLN(Ret_e);
     return Ret_e;
  }
  /**********************
@@ -260,8 +259,6 @@ t_eReturnCode ESP_ConnectWifi(const char *f_SSID_pc, const char *f_password_pc)
             }
         }
     }
-    DEBUG_PRINT("ESP_ConnectWifi Retval :");
-    DEBUG_PRINT(Ret_e);
     return Ret_e;
 }
 
@@ -315,7 +312,7 @@ t_eReturnCode ESP_Start_ProtocolCom(void)
     // get info status
     if (((t_uint32)millis - actualTime_u32) > (t_uint32)ESP_CHECK_CONNECTION)
     {
-        Serial.println("CheckCo every x sec");
+        DEBUG_PRINTLN("CheckCo every x sec");
         actualTime_u32 = (t_uint32)millis();
         Ret_e = s_ESP_GetInfo_StateESP();
     }  
@@ -339,9 +336,9 @@ t_eReturnCode ESP_Start_ProtocolCom(void)
         strcat(ProtocolCmd_ac, serverPort_ac);
         strcat(ProtocolCmd_ac, "\r\n");
         //Protocol_Cmd_str = c_ConnectionCmd_uac[ProtComType_e] + String(",\"") + String(IP_Address_pc) + String) + String(serverPort_ac) + String("\r\n");
-        //Serial.print("SendProtCmd : ");
+        //DEBUG_PRINT("SendProtCmd : ");
         Ret_e = s_ESP_MakeCommand((const char *)ProtocolCmd_ac, ESP_EXPECT_CONNECT, ESP_TIMEOUT_RCV);
-        //Serial.println(esp_reponse_pc);
+        //DEBUG_PRINTLN(esp_reponse_pc);
         if(Ret_e == RC_OK)
         {            
             g_ESP8266_Info_s.ConnectState_e = ESP_PROTOCOL_STATE_CONNECTED;
@@ -355,8 +352,6 @@ t_eReturnCode ESP_Start_ProtocolCom(void)
     {
         Ret_e = RC_OK;
     }
-    DEBUG_PRINT("ESP_Cfg retval : ");
-    DEBUG_PRINTLN(Ret_e);
     return Ret_e;
 }
 /*************************
@@ -453,8 +448,6 @@ t_eReturnCode ESP_SendData_WithProtocolCom(const char * f_dataToSend_pc)
             }
         }
     }
-    DEBUG_PRINT("ESP_SendData_WithProtocolCom retval : ");
-    DEBUG_PRINTLN(Ret_e);
     return Ret_e;
 }
 /******************************
@@ -480,15 +473,15 @@ t_eReturnCode ESP_RcvData_WithProtocolCom(const char *f_RcvData_pc)
         Ret_e = RC_WARNING_NO_OPERATION;
         // Used ReadBuffer function until there is something to read
         Ret_e = Modem_ReadBuffer(espResponse_ac);
-        Serial.print("Rcv :");
+        DEBUG_PRINT("Rcv :");
         printWithVisibleNewlines(espResponse_ac);
         if(Ret_e == RC_OK)
         {
             answerExepctedFind_pc = strstr((const char *)espResponse_ac,(const char*)ESP_EXPECT_RCV_DATA);
-            //Serial.println(espResponse_ac);
+            //DEBUG_PRINTLN(espResponse_ac);
             if(answerExepctedFind_pc != (char *)NULL)
             {
-                //Serial.println("Find IPD");
+                //DEBUG_PRINTLN("Find IPD");
                 checkstrcpy = strcpy((char *)f_RcvData_pc,(const char *)espResponse_ac);
                 if(checkstrcpy != (char *)f_RcvData_pc)
                 {
@@ -505,8 +498,6 @@ t_eReturnCode ESP_RcvData_WithProtocolCom(const char *f_RcvData_pc)
             }
         }
     }
-    DEBUG_PRINT("ESP_RcvData_WithProtocolCom retval : ");
-    DEBUG_PRINTLN(Ret_e);
     return Ret_e;
 }
 /*************************
@@ -536,8 +527,6 @@ t_eReturnCode ESP_Get_ProtocolCom_Cfg(t_sESP_ComStatus *f_ESP_Config_e)
             f_ESP_Config_e->SleepMode_e             = ESP_SLEEP_UNKNOWN;
         }
     }
-    DEBUG_PRINT("ESP_GetCfg retval : ");
-    DEBUG_PRINTLN(Ret_e);
     return Ret_e;
 }
 /***********************
@@ -554,8 +543,6 @@ t_eReturnCode ESP_GetFirmwareVersion(const char *f_firmwareVersion_pc)
     {
         Ret_e = s_ESP_MakeCommand_WithResponse(CMD(_GMR)," ",(t_uint16)ESP_TIMEOUT_READ,f_firmwareVersion_pc);
     }
-    DEBUG_PRINT("ESP_GetFirmwareVersion retval : ");
-    DEBUG_PRINTLN(Ret_e);
     return Ret_e;
 }
 /***********************
@@ -587,8 +574,8 @@ t_eReturnCode ESP_SetSleepMode(t_eESP_SleepMode f_sleepMode_e, t_uint32 f_timeSl
                 //ESP_Cmd_str = String(c_sleepModeCmd_ac[f_sleepMode_e]) + String(f_timeSleeping_u32) + String("\r\n");
             }
             strcat(ESP_Cmd_ac,"\r\n");
-            Serial.print("SleepCmd :");
-            Serial.println(ESP_Cmd_ac);
+            DEBUG_PRINT("SleepCmd :");
+            DEBUG_PRINTLN(ESP_Cmd_ac);
             Ret_e = s_ESP_MakeCommand((const char *)ESP_Cmd_ac, ESP_EXPECT_OK, ESP_TIMEOUT_READ);
         }
         //ESP_SLEEPMODE_TIME is not considered as continuous, once time is out, ESP is no longer with this sleepMode, others are.
@@ -601,7 +588,7 @@ t_eReturnCode ESP_SetSleepMode(t_eESP_SleepMode f_sleepMode_e, t_uint32 f_timeSl
             g_ESP8266_Info_s.SleepMode_e = ESP_SLEEP_UNKNOWN;
         }
     }
-    //Serial.println(g_ESP8266_Info_s.SleepMode_e);
+    //DEBUG_PRINTLN(g_ESP8266_Info_s.SleepMode_e);
     return Ret_e;
 }
 //********************************************************************************
@@ -660,12 +647,12 @@ static t_eReturnCode s_ESP_MakeCommand(const char *f_command_pac, const char * f
     char * answerExepctedFind_pc = (char*)NULL;
     if(f_command_pac == (const char*)NULL || f_answerExpected_pac == (const char*)NULL)
     {
-        Serial.println("MakeCmd ptr null");
+        DEBUG_PRINTLN("MakeCmd ptr null");
         Ret_e = RC_ERROR_PTR_NULL;
     }
     if(Ret_e == RC_OK)
     {
-        Serial.print("Send : ");
+        DEBUG_PRINT("Send : ");
         printWithVisibleNewlines(f_command_pac);
         for(LI_u8 = 0 ; LI_u8 < ESP_WL_MAX_ATTEMPT_CONNECTION ; LI_u8++)
         {
@@ -675,7 +662,7 @@ static t_eReturnCode s_ESP_MakeCommand(const char *f_command_pac, const char * f
             if(Ret_e == RC_OK)
             {   
                 Ret_e = Modem_ReadBuffer(response_ac);
-                Serial.print("Rcv :");
+                DEBUG_PRINT("Rcv :");
                 printWithVisibleNewlines(response_ac);
                 //see if ESP answer is corresponding with what expected
             }
@@ -690,15 +677,13 @@ static t_eReturnCode s_ESP_MakeCommand(const char *f_command_pac, const char * f
                 }
                 else 
                 {
-                    Serial.print(f_answerExpected_pac);
-                    Serial.println("Noot Found");
+                    DEBUG_PRINT(f_answerExpected_pac);
+                    DEBUG_PRINTLN("Noot Found");
                     Ret_e = RC_WARNING_WRONG_RESULT;
                 }
             }                        
         } 
     }
-    DEBUG_PRINT("s_ESP_MakeCommand RetVal:");
-    DEBUG_PRINTLN(Ret_e);
     return Ret_e;
 }
 /********************************
@@ -717,7 +702,7 @@ static t_eReturnCode s_ESP_MakeCommand_WithResponse(const char *f_command_pac, c
     }
     if(Ret_e == RC_OK)
     {
-        Serial.print("Send : ");
+        DEBUG_PRINT("Send : ");
         printWithVisibleNewlines(f_command_pac);
         for(LI_u8 = 0 ; LI_u8 < ESP_WL_MAX_ATTEMPT_CONNECTION ; LI_u8++)
         {
@@ -727,7 +712,7 @@ static t_eReturnCode s_ESP_MakeCommand_WithResponse(const char *f_command_pac, c
             if(Ret_e == RC_OK)
             {   
                 Ret_e = Modem_ReadBuffer(response_ac);
-                Serial.print("Rcv : ");
+                DEBUG_PRINT("Rcv : ");
                 printWithVisibleNewlines(response_ac);
             }
             //see if ESP answer is corresponding with what expected
@@ -739,18 +724,18 @@ static t_eReturnCode s_ESP_MakeCommand_WithResponse(const char *f_command_pac, c
                 answerExepctedFind_pc = strstr(response_ac, ESP_EXPECT_BUSY);
                 if(answerExepctedFind_pc != (char *)NULL)
                 {
-                    //Serial.println("Waiting");
+                    //DEBUG_PRINTLN("Waiting");
                     Ret_e = RC_WARNING_BUSY;
                 }
                 else
                 {
-                    //Serial.println("ReceivedCmd :");
-                    //Serial.println(response_ac);
+                    //DEBUG_PRINTLN("ReceivedCmd :");
+                    //DEBUG_PRINTLN(response_ac);
                     answerExepctedFind_pc = (char * )NULL;
                     answerExepctedFind_pc = strstr(response_ac, f_answerExpected_pac);
                     if(answerExepctedFind_pc != (char *)NULL)
                     {
-                        //Serial.println("find it");
+                        //DEBUG_PRINTLN("find it");
                         checkstrcpy = strcpy((char *)f_answer_pac, (const char *)response_ac);
                         if ((char *)checkstrcpy != (char *)f_answer_pac) 
                         {
@@ -769,13 +754,11 @@ static t_eReturnCode s_ESP_MakeCommand_WithResponse(const char *f_command_pac, c
                 }                          
             }            
         }
-        //Serial.println(LI_u8);
+        //DEBUG_PRINTLN(LI_u8);
         if(LI_u8 >= (t_uint8)ESP_WL_MAX_ATTEMPT_CONNECTION)
         {
           Ret_e = RC_ERROR_LIMIT_REACHED;
         }
     }
-    DEBUG_PRINT("s_ESP_MakeCommand_Withreponse RetVal:");
-    DEBUG_PRINTLN(Ret_e);
     return Ret_e;
 }   

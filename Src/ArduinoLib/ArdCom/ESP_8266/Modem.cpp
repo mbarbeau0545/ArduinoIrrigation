@@ -57,8 +57,6 @@ t_eReturnCode Modem_InitCom(t_uint32 f_baudrate_u32, t_uint8 f_rxPin_u8, t_uint8
     {
         g_Modem_Initialized_b = (t_bool)true;
     }
-    DEBUG_PRINT("Modem_InitCom Retval :");
-    DEBUG_PRINTLN(Ret_e);
     return Ret_e;
 }
 /**********************
@@ -69,7 +67,6 @@ void Modem_EndCom(void)
     g_esp8266Serial_pcl->end();
     g_Modem_Initialized_b = (t_bool)false;
     delete g_esp8266Serial_pcl;
-    DEBUG_PRINTLN("Modem-EndCom done.");
 }
 /**********************
 * Modem_ReadBuffer
@@ -95,8 +92,6 @@ t_eReturnCode Modem_Write(const char *f_txbuffer_pc)
         BufferSizeToSend_ui = strlen((char*)f_txbuffer_pc);
         for(LI_u8 = (t_uint8)0 ; LI_u8 < maxTryWrite_u8 ; LI_u8++)
         {
-            //DEBUG_PRINT("Modem-Send to ESP : ");
-            //DEBUG_PRINTLN(f_txbuffer_pc);
             SendBufferSize_ui = g_esp8266Serial_pcl->write((const t_uint8 *)f_txbuffer_pc, BufferSizeToSend_ui);
             if(BufferSizeToSend_ui != SendBufferSize_ui)
             {
@@ -114,13 +109,8 @@ t_eReturnCode Modem_Write(const char *f_txbuffer_pc)
         }
     }
     g_esp8266Serial_pcl->flush(); // Vider le tampon de réception
-    DEBUG_PRINT("Modem_Write Retval :");
-    DEBUG_PRINTLN(Ret_e);
     return Ret_e;
 }
-/**********************
-* Modem_ReadBuffer
-***********************/
 /**********************
 * Modem_ReadBuffer
 ***********************/
@@ -181,8 +171,6 @@ t_eReturnCode Modem_ReadBuffer(char *f_rxBuffer_pc) {
         }
     }
     g_esp8266Serial_pcl->flush(); // Vider le tampon de réception
-    DEBUG_PRINT("Modem_ReadBuffer Retval :");
-    DEBUG_PRINTLN(Ret_e);
     return Ret_e;   
 }
 //********************************************************************************

@@ -22,15 +22,16 @@
     // ********************************************************************
     // *                      Defines
     // ********************************************************************
+    //#define DEBUG_MODE
+    #define DEBUG_PRINTER                                                     
+       Serial /**< Define where debug output will be printed.*/                
+          
+
     //uncomment next line to make DEBUG MODE OPERATIONNAL
     //#define DHT_DEBUG
 
-    // Définition des macros pour le débogage
-    #define DEBUG_PRINTER                                                          \
-        Serial /**< Define where debug output will be printed.                       \
-          */
 
-    #ifdef DHT_DEBUG
+    #ifdef DEBUG_PRINTER
     #define DEBUG_PRINT(...)                                                       \
     { DEBUG_PRINTER.print(__VA_ARGS__); }
     #define DEBUG_PRINTLN(...)                                                     \

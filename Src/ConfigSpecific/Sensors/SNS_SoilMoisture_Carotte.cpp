@@ -78,7 +78,7 @@ t_eReturnCode SNS_SoilMoisture_Carotte_Get( t_sint16 *f_value_s16)
         *f_value_s16 = (t_sint16)0;
         valueReceived_s16 = (t_sint16)analogRead((t_uint8)g_SoilMoisture_Carotte_Pin_u8);   
         //make % value
-        //Serial.println(valueReceived_u16);
+        //DEBUG_PRINTLN(valueReceived_u16);
         if(valueReceived_s16 > (t_sint16)MAX_VALUE_SOILMOIS_SENSOR)
         {
             valueReceived_s16 =(t_sint16)MAX_VALUE_SOILMOIS_SENSOR;

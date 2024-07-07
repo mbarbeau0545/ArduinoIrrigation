@@ -28,6 +28,29 @@
     // ********************************************************************
     // *                      Types
     // ********************************************************************
+    /* CAUTION : Automatic generated code section for Enum: Start */
+	typedef enum
+	{
+	LOGIC_INSTANCE_1= 0,
+	LOGIC_INSTANCE_2,
+	LOGIC_INSTANCE_3,
+	LOGIC_INSTANCE_4,
+	LOGIC_INSTANCE_5,
+	LOGIC_INSTANCE_6,
+	LOGIC_INSTANCE_7,
+	}t_eEssaisEnum;
+    /* CAUTION : Automatic generated code section for Enum: End */
+
+    /* CAUTION : Automatic generated code section for Structure: Start */
+	typedef struct
+	{
+	t_uint8                       vidfn_u8;
+	t_float32                     fefef_s14;
+	t_eSPlitBoc                   dgzeg;
+	t_sPOtrtnf                    edgfzaegez23;
+	}t_sESSAisSTRuct;
+    /* CAUTION : Automatic generated code section for Structure: End */
+
     typedef struct 
     {
         t_eESP_WifiMode             WifiMode_e;
@@ -48,26 +71,20 @@
     // ********************************************************************
     // *                      Variables
     // ********************************************************************
-
     /* CAUTION : Automatic generated code section: Start */
-
-    /**< Wifi COnfiguration*/
-    const t_sESP_ClientCfg c_ESPComProjectCfg_s = {
-        .WifiMode_e         = ESP_WIFI_MODE_STATION,
-        .exchangeType_e     = ESP_EXCHANGE_DATA_SERIAL,
-        .ProtComType_e      = ESP_CONNECTION_TCP_CLIENT,
-        .baudRate_u32       = (t_uint32)BAUDRATE_WIFI, // Par exemple, BAUDRATE_WIFI peut être 115200
-        .rxPin_u8           = 10,
-        .txPin_u8           = 11,
-        .serverID_pac       = "192.168.1.12",    
-        .serverPrt_pac       = "80",
-        .LiveBoxName_pac    = "Livebox-E030",
-        .password_pac       = "ZRvFTt7t2kfVaWrSYX",
-        
-    };
-    /*const char * SSID_Nantes =  "Livebox-E030";
-    const char * Password_Nantes =  "ZRvFTt7t2kfVaWrSYX";
-    const char * IP_AUDMBA_Nantes =  "192.168.1.26";*/
+	/**< Wifi COnfiguration*/
+		const t_sESP_ClientCfg c_ESPComProjectCfg_s = {
+		.WifiMode_e               = ESP_WIFI_MODE_STATION,
+		.exchangeType_e           = None,
+		.ProtComType_e            = ESP_CONNECTION_TCP_CLIENT,
+		.baudRate_u32             = 115200,
+		.rxPin_u8                 = 10,
+		.txPin_u8                 = 11,
+		.serverID_pac             = "192.168.1.1",
+		.serverPrt_pac            = "80",
+		.LiveBoxName_pac          = "Livebox-E030",
+		.password_pac             = "ZRvFTt7t2kfVaWrSYX",
+	};
     /* CAUTION : Automatic generated code section: End */
     //****************************************************************************
     //                      Public functions - Prototypes
