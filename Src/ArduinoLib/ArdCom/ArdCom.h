@@ -38,7 +38,7 @@
     *
     *
     */
-    t_eReturnCode ArdCom_Init(t_eArdCom_TypeCom f_TypeCom_e);
+    t_eReturnState ArdCom_Init(t_eArdCom_TypeCom f_TypeCom_e);
     /**
      *
      *	@brief
@@ -51,7 +51,7 @@
     *
     *
     */
-    t_eReturnCode ArdCom_Close(t_eArdCom_TypeCom f_TypeCom_e);
+    t_eReturnState ArdCom_Close(t_eArdCom_TypeCom f_TypeCom_e);
     /**
      *
      *	@brief
@@ -64,7 +64,7 @@
     *
     *
     */
-    t_eReturnCode ArdCom_GetComCfg(t_eArdCom_TypeCom f_TypeCom_e, t_uArdCom_GetCfg *f_ComCfg_u);
+    t_eReturnState ArdCom_GetComCfg(t_eArdCom_TypeCom f_TypeCom_e, t_uArdCom_GetCfg *f_ComCfg_u);
     /**
      *
      *	@brief
@@ -77,7 +77,7 @@
     *
     *
     */
-    t_eReturnCode ArdCom_StartCom(t_eArdCom_TypeCom f_TypeCom_e);
+    t_eReturnState ArdCom_StartCom(t_eArdCom_TypeCom f_TypeCom_e);
     /**
      *
      *	@brief
@@ -90,7 +90,7 @@
     *
     *
     */
-    t_eReturnCode ArdCom_EndCom(t_eArdCom_TypeCom f_TypeCom_e);
+    t_eReturnState ArdCom_EndCom(t_eArdCom_TypeCom f_TypeCom_e);
     /**
      *
      *	@brief
@@ -103,7 +103,7 @@
     *
     *
     */
-    t_eReturnCode ArdCom_RcvData(t_eArdCom_TypeCom f_TypeCom_e, const char * f_DataRcv_ps);
+    t_eReturnState ArdCom_RcvData(t_eArdCom_TypeCom f_TypeCom_e,char * f_DataRcv_ps);
     /**
      *
      *	@brief
@@ -116,8 +116,7 @@
     *
     *
     */
-    t_eReturnCode ArdCom_SendData(t_eArdCom_TypeCom f_TypeCom_e, const char* f_dataToSend_pc);
-
+    t_eReturnState ArdCom_SendData(t_eArdCom_TypeCom f_TypeCom_e,char* f_dataToSend_pc);
 #endif
 //************************************************************************************
 // End of File

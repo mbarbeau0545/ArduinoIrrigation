@@ -182,7 +182,7 @@
     *
     *
     */ 
-    t_eReturnCode ESP_Init(void);
+    t_eReturnState ESP_Init(void);
     /**
     *
     *	@brief      End every Communication outside and inside the ESP
@@ -195,7 +195,7 @@
     *   RC_OK                           : Function succesfully close all communication 
     *   See ESP_DisConnectWifi and ESP_Close_ProtocolCom
     */
-    t_eReturnCode ESP_Close(void);
+    t_eReturnState ESP_Close(void);
     /**
     *
     *	@brief     Connection to the Wifi using the ESP 
@@ -214,7 +214,7 @@
     *
     *
     */ 
-    t_eReturnCode ESP_ConnectWifi(const char *f_SSID, const char *f_password);
+    t_eReturnState ESP_ConnectWifi(const char *f_SSID, const char *f_password);
         /**
     *
     *	@brief Disconnect the Wifi 
@@ -227,7 +227,7 @@
     *   RC_OK                           : Wifi Disconnected
     *
     */ 
-    t_eReturnCode ESP_DisConnectWifi(void);
+    t_eReturnState ESP_DisConnectWifi(void);
     /**
     *
     *	@brief      Enable user to make communication
@@ -242,7 +242,7 @@
     *   @param[out]
     *   
     */  
-    t_eReturnCode ESP_Start_ProtocolCom(void);
+    t_eReturnState ESP_Start_ProtocolCom(void);
     /**
     *
     *	@brief      Close Protocol Communication
@@ -256,7 +256,7 @@
     *
     *
     */
-    t_eReturnCode ESP_Close_ProtocolCom(void);
+    t_eReturnState ESP_Close_ProtocolCom(void);
     /**
     *
     *	@brief      Allow user to send data using Protocol Communication
@@ -275,7 +275,7 @@
     *   RC_ERROR_NOT_ALLOWED            : User can not use SendBuf in SSL connection.\n
     *   RC_OK                           : Data send succesfully.\n
     */ 
-    t_eReturnCode ESP_SendData_WithProtocolCom(const char * f_dataToSend_pc);
+    t_eReturnState ESP_SendData_WithProtocolCom(char * f_dataToSend_pc);
     /**
     *
     *	@brief
@@ -295,7 +295,7 @@
     *
     *
     */
-    t_eReturnCode ESP_RcvData_WithProtocolCom(const char * f_RcvData_pc);
+    t_eReturnState ESP_RcvData_WithProtocolCom(char * f_RcvData_pc);
     /**
     *
     *	@brief
@@ -308,7 +308,7 @@
     *
     *
     */
-    t_eReturnCode ESP_Get_ProtocolCom_Cfg(t_sESP_ComStatus *f_ESP_Config_u);
+    t_eReturnState ESP_Get_ProtocolCom_Cfg(t_sESP_ComStatus *f_ESP_Config_u);
     /**
     *
     *	@brief
@@ -321,7 +321,7 @@
     *
     *
     */  
-    t_eReturnCode ESP_GetFirmwareVersion(const char *f_firmwareVersion_pc);
+    t_eReturnState ESP_GetFirmwareVersion(char *f_firmwareVersion_pc);
     /**
     *
     *	@brief
@@ -334,7 +334,7 @@
     *
     *
     */  
-    t_eReturnCode ESP_SetSleepMode(t_eESP_SleepMode f_sleepMode_e, t_uint32 f_timeSleeping_u32);
+    t_eReturnState ESP_SetSleepMode(t_eESP_SleepMode f_sleepMode_e, t_uint32 f_timeSleeping_u32);
 #endif // WIFI_ESP8266_H_INCLUDED           
 //************************************************************************************
 // End of File

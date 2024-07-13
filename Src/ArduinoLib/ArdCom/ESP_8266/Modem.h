@@ -25,7 +25,7 @@
     // ********************************************************************
     #define MODEM_TIMEOUT          7000            /* Maximum time waiting for device to respond*/
     #define MODEM_EXTENDED_TIMEOUT 60000
-    #define MODEM_MAX_BUFF_SIZE    128              /*Max buffer size*/
+    #define MODEM_MAX_BUFF_SIZE    96              /*Max buffer size*/
     // ********************************************************************
     // *                      Types
     // ********************************************************************
@@ -54,7 +54,7 @@
     *   RC_ERROR_MODULE_NOT_INITIALIZED : An error occured, The module is not initialized
     *   RC_OK                           : Module initialized 
     */
-    t_eReturnCode Modem_InitCom(t_uint32 f_baudrate_u32, t_uint8 f_rxPin_u8, t_uint8 f_txPin_u8);
+    t_eReturnState Modem_InitCom(t_uint32 f_baudrate_u32, t_uint8 f_rxPin_u8, t_uint8 f_txPin_u8);
     /**
     *
     *	@brief End communication with Serial 
@@ -82,7 +82,7 @@
     *   RC_ERROR_LIMIT_REACHED          : Data has been send but not entirely.
     *   RC_OK                           : Data has been send succesfully. 
    */
-  t_eReturnCode Modem_Write(const char *f_txbuffer_pc);
+  t_eReturnState Modem_Write(const char *f_txbuffer_pc);
   /**
     *
     *	@brief Read buffer and copy it on f_rxBuffer_pc 
@@ -100,7 +100,7 @@
     *
     *
     */
-   t_eReturnCode Modem_ReadBuffer(char *f_rxBuffer_pc);
+   t_eReturnState Modem_ReadBuffer(char *f_rxBuffer_pc);
 
 
 #endif // MODEM_H_INCLUDED           

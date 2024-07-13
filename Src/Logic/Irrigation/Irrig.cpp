@@ -77,7 +77,7 @@ t_eIrrig_CoState       g_ArdRaspCo_e    = IRRIG_STATUS_UNKNOWN;
 //********************************************************************************
 //                      Local functions - Prototypes
 //********************************************************************************
-static t_eReturnCode s_Irrig_SetActuatorsValues(t_sint16 f_ActuatorsContainer_as16[]);
+static t_eReturnState s_Irrig_SetActuatorsValues(t_sint16 f_ActuatorsContainer_as16[]);
 /**
  *
  *	@brief      Get Actuators values from Actuator Drivers
@@ -90,7 +90,7 @@ static t_eReturnCode s_Irrig_SetActuatorsValues(t_sint16 f_ActuatorsContainer_as
  *
  *
  */
-static t_eReturnCode s_Irrig_GetActuatorsValues(t_sint16 f_ActuatorsContainer_as16[]);
+static t_eReturnState s_Irrig_GetActuatorsValues(t_sint16 f_ActuatorsContainer_as16[]);
 /**
  *
  *	@brief      Get Sensors values from Captor Drivers
@@ -103,7 +103,7 @@ static t_eReturnCode s_Irrig_GetActuatorsValues(t_sint16 f_ActuatorsContainer_as
  *
  *
  */
-static t_eReturnCode s_Irrig_GetSensorsValues(t_sint16 f_SensorsContainer_as16[]);
+static t_eReturnState s_Irrig_GetSensorsValues(t_sint16 f_SensorsContainer_as16[]);
 
 /**
  *
@@ -144,7 +144,7 @@ static void s_Irrig_WakeUpMode(void);
  *
  *
  */
-static void s_Irrig_ResetBuffer(char f_buffer_ac[], t_uint16 f_len_u16);
+static void s_Irrig_ResetBuffer( char f_buffer_ac[], t_uint16 f_len_u16);
 /**
  *
  *	@brief      Receive and Schedule the receive Task
@@ -157,7 +157,7 @@ static void s_Irrig_ResetBuffer(char f_buffer_ac[], t_uint16 f_len_u16);
  *
  *
  */
-static t_eReturnCode s_Irrig_MasterConnection(void);
+static t_eReturnState s_Irrig_MasterConnection(void);
 /**
  *
  *	@brief      Receive and Schedule the receive Task
@@ -170,7 +170,7 @@ static t_eReturnCode s_Irrig_MasterConnection(void);
  *
  *
  */
-static t_eReturnCode s_Irrig_GetTask_FromMaster(const char *f_RcvData_pc);
+static t_eReturnState s_Irrig_GetTask_FromMaster(char *f_RcvData_pc);
 /**
  *
  *	@brief      Receive and Schedule the receive Task
@@ -183,7 +183,7 @@ static t_eReturnCode s_Irrig_GetTask_FromMaster(const char *f_RcvData_pc);
  *
  *
  */
-static t_eReturnCode s_Irrig_ExtractMasterCmd(const char *f_RcvCmdMaster_pac, t_uint16 f_bufferSize_u16, t_sint16 f_container_sa16[]);
+static t_eReturnState s_Irrig_ExtractMasterCmd(char *f_RcvCmdMaster_pac, t_uint16 f_bufferSize_u16, t_sint16 f_container_sa16[]);
 /**
  *
  *	@brief      Receive and Schedule the receive Task
@@ -196,7 +196,7 @@ static t_eReturnCode s_Irrig_ExtractMasterCmd(const char *f_RcvCmdMaster_pac, t_
  *
  *
  */
-static t_eReturnCode s_Irrig_ModeAskTask(void);
+static t_eReturnState s_Irrig_ModeAskTask(void);
 /**
  *
  *	@brief      Receive and Schedule the receive Task
@@ -209,7 +209,7 @@ static t_eReturnCode s_Irrig_ModeAskTask(void);
  *
  *
  */
-static t_eReturnCode s_Irrig_ModeRcvActData(void);
+static t_eReturnState s_Irrig_ModeRcvActData(void);
 /**
  *
  *	@brief      Receive and Schedule the receive Task
@@ -222,7 +222,7 @@ static t_eReturnCode s_Irrig_ModeRcvActData(void);
  *
  *
  */
-static t_eReturnCode s_Irrig_ModeSetActData(void);
+static t_eReturnState s_Irrig_ModeSetActData(void);
 /**
  *
  *	@brief      Receive and Schedule the receive Task
@@ -235,7 +235,7 @@ static t_eReturnCode s_Irrig_ModeSetActData(void);
  *
  *
  */
-static t_eReturnCode s_Irrig_ModeSendSNSVal(void);
+static t_eReturnState s_Irrig_ModeSendSNSVal(void);
 /**
  *
  *	@brief      Receive and Schedule the receive Task
@@ -248,7 +248,7 @@ static t_eReturnCode s_Irrig_ModeSendSNSVal(void);
  *
  *
  */
-static t_eReturnCode s_Irrig_ModeWakeUp(void);
+static t_eReturnState s_Irrig_ModeWakeUp(void);
 /**
  *
  *	@brief      Receive and Schedule the receive Task
@@ -261,16 +261,16 @@ static t_eReturnCode s_Irrig_ModeWakeUp(void);
  *
  *
  */
-static t_eReturnCode s_Irrig_ModeSetWorkMode(void);
+static t_eReturnState s_Irrig_ModeSetWorkMode(void);
 //****************************************************************************
 //                      Public functions - Implementation
 //********************************************************************************
 /****************************
 * LgcIrrig_Init
 ****************************/
-t_eReturnCode LgcIrrig_Init(void)
+t_eReturnState LgcIrrig_Init(void)
 {
-    t_eReturnCode Ret_e = RC_OK;
+    t_eReturnState Ret_e = RC_OK;
     Ret_e = ACT_Init();
     DEBUG_PRINT("ACT init : ");
     DEBUG_PRINTLN(Ret_e);
@@ -304,11 +304,9 @@ t_eReturnCode LgcIrrig_Init(void)
 /****************************
 * LgcIrrig_Cyclic
 ****************************/
-t_eReturnCode LgcIrrig_Cyclic()
+t_eReturnState LgcIrrig_Cyclic()
 {
-    t_eReturnCode Ret_e = RC_OK;
-
-    static t_uint8 s_ctr_Problem_u8 = (t_uint8)0;
+    t_eReturnState Ret_e = RC_OK;
     static t_uint32 s_actualTime_CoStatue_u32 = millis();
  
     DEBUG_PRINT("Arduino state : ");
@@ -324,7 +322,8 @@ t_eReturnCode LgcIrrig_Cyclic()
         /*DEBUG_PRINTLN("here");
         if((millis()  - s_actualTime_CoStatue_u32) > (t_uint32)MAIN_CHECK_CONNECT_STATUE)
         {
-            Ret_e = ESP_Get_ProtocolCom_Cfg(&s_ESP_Cfg_s);
+            Ret_e = ESP_Get_ProtocolCom_Cfg(&s_ESP_Cfg_s);AT+CIPSTART="TCP","192.168.1.27",80\r\r\n\r\nERROR\r\nCLOSED\r\n
+            AT+CWJAP?\r\r\n+CWJ@P:"Livebox-0BB3","a4:3e951:09:0b:b3#,1,-71\r\n\r\nOK\r\n
         }*/
         switch(g_ArduinoState_e)
         {
@@ -400,9 +399,9 @@ t_eReturnCode LgcIrrig_Cyclic()
 //********************************************************************************
 //                      Local functions - Implementation
 //******************************************************************************** 
-static t_eReturnCode s_Irrig_ModeWakeUp(void)
+static t_eReturnState s_Irrig_ModeWakeUp(void)
 {
-    t_eReturnCode Ret_e = RC_OK;
+    t_eReturnState Ret_e = RC_OK;
     
     
     //re_initialize all Actuators value to default
@@ -427,9 +426,9 @@ static t_eReturnCode s_Irrig_ModeWakeUp(void)
 /****************************
 * s_Irrig_GetTask_FromMaster
 ****************************/
-static t_eReturnCode s_Irrig_ModeAskTask(void)
+static t_eReturnState s_Irrig_ModeAskTask(void)
 {
-    t_eReturnCode Ret_e = RC_OK;
+    t_eReturnState Ret_e = RC_OK;
     char RcvServerData_ac[MODEM_MAX_BUFF_SIZE];
     s_Irrig_ResetBuffer(RcvServerData_ac, MODEM_MAX_BUFF_SIZE);
     DEBUG_PRINT("Set task");
@@ -459,12 +458,11 @@ static t_eReturnCode s_Irrig_ModeAskTask(void)
 /****************************
 * s_Irrig_GetTask_FromMaster
 ****************************/
-static t_eReturnCode s_Irrig_ModeRcvActData(void)
+static t_eReturnState s_Irrig_ModeRcvActData(void)
 {
-    t_eReturnCode Ret_e = RC_OK;
+    t_eReturnState Ret_e = RC_OK;
     t_uint8 LI_u8 = (t_uint8)0;
     char RcvServerData_ac[MODEM_MAX_BUFF_SIZE];
-
     Ret_e = ArdCom_SendData(c_ArduinoComUsed_e, c_Arduino_RcvActuatorsValues_pac);
     if(Ret_e == RC_OK)
     {
@@ -477,7 +475,7 @@ static t_eReturnCode s_Irrig_ModeRcvActData(void)
         {// we rcv actuatorsd values
             // check here
             DEBUG_PRINT("Exctraction actuators value");
-            Ret_e = s_Irrig_ExtractMasterCmd((const char *)RcvServerData_ac, (t_uint16)strlen(RcvServerData_ac),g_actuatorsValue_sa16);
+            Ret_e = s_Irrig_ExtractMasterCmd((char *)RcvServerData_ac, (t_uint16)strlen(RcvServerData_ac),g_actuatorsValue_sa16);
             DEBUG_PRINTLN(Ret_e);
             if(Ret_e == RC_OK)
             {// we now receive Actuators duration
@@ -492,7 +490,7 @@ static t_eReturnCode s_Irrig_ModeRcvActData(void)
                     if(strstr(RcvServerData_ac, c_Arduino_RcvActuatorsDuration_pac) != (char * )NULL)
                     {// check rcv actuators duration ok 
                         DEBUG_PRINTLN("Exctraction actuators duration");
-                        Ret_e = s_Irrig_ExtractMasterCmd((const char *)RcvServerData_ac,(t_uint16)strlen(RcvServerData_ac), g_actuatorsDuration_sa16);
+                        Ret_e = s_Irrig_ExtractMasterCmd((char *)RcvServerData_ac,(t_uint16)strlen(RcvServerData_ac), g_actuatorsDuration_sa16);
                         for(LI_u8 = 0 ; LI_u8 < ACT_NUMBER ; LI_u8++)
                         {
                             DEBUG_PRINTLN(g_actuatorsDuration_sa16[LI_u8]);
@@ -521,9 +519,9 @@ static t_eReturnCode s_Irrig_ModeRcvActData(void)
 /****************************
 * s_Irrig_ModeSetActData
 ****************************/
-static t_eReturnCode s_Irrig_ModeSetActData(void)
+static t_eReturnState s_Irrig_ModeSetActData(void)
 {
-    t_eReturnCode Ret_e = RC_OK;
+    t_eReturnState Ret_e = RC_OK;
     static t_uint32 s_actualTime_ActDuration_u32;
     static t_bool s_checkTimeDuration_b = (t_bool)false;
     t_uint8 LI_u8 = (t_uint8)0;
@@ -572,9 +570,9 @@ static t_eReturnCode s_Irrig_ModeSetActData(void)
 /****************************
 * s_Irrig_ModeSendSNSVal
 ****************************/
-static t_eReturnCode s_Irrig_ModeSendSNSVal(void)
+static t_eReturnState s_Irrig_ModeSendSNSVal(void)
 {
-    t_eReturnCode Ret_e = RC_OK;
+    t_eReturnState Ret_e = RC_OK;
     t_uint8 LI_u8 = (t_uint8)0;
     t_sint16 SNSVal_as16[SNS_NUMBER];
     char sendDataToMaster_ac[MODEM_MAX_BUFF_SIZE];
@@ -588,7 +586,7 @@ static t_eReturnCode s_Irrig_ModeSendSNSVal(void)
     Ret_e = s_Irrig_GetSensorsValues(SNSVal_as16);
     if(Ret_e == RC_OK)
     {
-        strcpy(sendDataToMaster_ac, c_Arduino_SendACTValues_pac);
+        strcpy(sendDataToMaster_ac, c_Arduino_SendSNSvalues_pac);
         strcat(sendDataToMaster_ac, ",");
         for(LI_u8 = 0 ; LI_u8 < (t_uint8)SNS_NUMBER ; LI_u8++)
         {
@@ -619,9 +617,9 @@ static t_eReturnCode s_Irrig_ModeSendSNSVal(void)
 /****************************
 * s_Irrig_ModeSetWorkMode
 ****************************/
-static t_eReturnCode s_Irrig_ModeSetWorkMode(void)
+static t_eReturnState s_Irrig_ModeSetWorkMode(void)
 {
-    t_eReturnCode Ret_e = RC_OK;
+    t_eReturnState Ret_e = RC_OK;
     String Cmd_WorkMode_str;
     Cmd_WorkMode_str = String("100:") + String(Ard_WorkMode_e);
     Ret_e = ArdCom_SendData(c_ArduinoComUsed_e, Cmd_WorkMode_str.c_str());
@@ -630,12 +628,10 @@ static t_eReturnCode s_Irrig_ModeSetWorkMode(void)
 /****************************
 * s_Irrig_GetTask_FromMaster
 ****************************/
-static t_eReturnCode s_Irrig_GetTask_FromMaster(const char *f_RcvData_pc)
+static t_eReturnState s_Irrig_GetTask_FromMaster(char *f_RcvData_pc)
 {
-    t_eReturnCode Ret_e = RC_OK;
-    char espResponse_ac[MODEM_MAX_BUFF_SIZE];
-    char * checkstrcpy = (char *)NULL;
-    if(f_RcvData_pc == (const char *)NULL)
+    t_eReturnState Ret_e = RC_OK;
+    if(f_RcvData_pc == (char *)NULL)
     {
         Ret_e = RC_ERROR_PTR_NULL;
     }
@@ -645,15 +641,7 @@ static t_eReturnCode s_Irrig_GetTask_FromMaster(const char *f_RcvData_pc)
         delay(ARDUINO_WAIT_TASK_FROM_SERVER);
         if(Ret_e == RC_OK)
         {
-            Ret_e = ArdCom_RcvData(c_ArduinoComUsed_e, espResponse_ac);            
-            if(Ret_e == RC_OK)
-            {
-                checkstrcpy = strcpy((char *)f_RcvData_pc,(const char *)espResponse_ac);
-                if(checkstrcpy != (char *)f_RcvData_pc)
-                {
-                    Ret_e = RC_ERROR_COPY_FAILED;
-                }
-            }
+            Ret_e = ArdCom_RcvData(c_ArduinoComUsed_e, f_RcvData_pc);
         }        
     }
     return Ret_e;
@@ -661,12 +649,12 @@ static t_eReturnCode s_Irrig_GetTask_FromMaster(const char *f_RcvData_pc)
 /****************************
 * s_Irrig_GetTask_FromMaster
 ****************************/
-static t_eReturnCode s_Irrig_ExtractMasterCmd(const char *f_RcvCmdMaster_pac, t_uint16 f_bufferSize_u16, t_sint16 f_container_sa16[])
+static t_eReturnState s_Irrig_ExtractMasterCmd(char *f_RcvCmdMaster_pac, t_uint16 f_bufferSize_u16, t_sint16 f_container_sa16[])
 {
-    t_eReturnCode Ret_e = RC_OK;
+    t_eReturnState Ret_e = RC_OK;
     t_uint8 counter_u16 = 0;
     t_uint16 LI_u16;
-    if(f_RcvCmdMaster_pac == (const char * )NULL)
+    if(f_RcvCmdMaster_pac == (char * )NULL)
     {
         Ret_e = RC_ERROR_PTR_NULL;
     }
@@ -721,9 +709,9 @@ static void s_Irrig_WakeUpMode(void)
 /****************************
 * s_Irrig_MasterConnection
 ****************************/
-static t_eReturnCode s_Irrig_MasterConnection(void)
+static t_eReturnState s_Irrig_MasterConnection(void)
 {
-    t_eReturnCode Ret_e = RC_OK;
+    t_eReturnState Ret_e = RC_OK;
     DEBUG_PRINTLN("MakeStartCom");
     Ret_e = ArdCom_StartCom(c_ArduinoComUsed_e);
     if(Ret_e == RC_OK)
@@ -739,9 +727,9 @@ static t_eReturnCode s_Irrig_MasterConnection(void)
 /****************************
 * s_Irrig_SetActuatorsValues
 ****************************/
-static t_eReturnCode s_Irrig_SetActuatorsValues(t_sint16 f_ActuatorsContainer_as16[])
+static t_eReturnState s_Irrig_SetActuatorsValues(t_sint16 f_ActuatorsContainer_as16[])
 {
-    t_eReturnCode Ret_e = RC_OK;
+    t_eReturnState Ret_e = RC_OK;
     t_uint8 LI_u8;
     for(LI_u8 = (t_uint8)0 ; (t_uint8)LI_u8 < ACT_NUMBER && Ret_e == RC_OK; LI_u8++ )
     {
@@ -752,9 +740,9 @@ static t_eReturnCode s_Irrig_SetActuatorsValues(t_sint16 f_ActuatorsContainer_as
 /****************************
 * s_Irrig_GetActuatorsValues
 ****************************/
-static t_eReturnCode s_Irrig_GetActuatorsValues(t_sint16 f_ActuatorsContainer_as16[])
+static t_eReturnState s_Irrig_GetActuatorsValues(t_sint16 f_ActuatorsContainer_as16[])
 {
-    t_eReturnCode Ret_e = RC_OK;
+    t_eReturnState Ret_e = RC_OK;
     t_uint8 LI_u8;
     for(LI_u8 = (t_uint8)0 ; (t_uint8)LI_u8 < ACT_NUMBER && Ret_e == RC_OK; LI_u8++ )
     {
@@ -766,9 +754,9 @@ static t_eReturnCode s_Irrig_GetActuatorsValues(t_sint16 f_ActuatorsContainer_as
 /****************************
 * s_Irrig_GetSensorsValues
 ****************************/
-static t_eReturnCode s_Irrig_GetSensorsValues(t_sint16 f_SensorsContainer_as16[])
+static t_eReturnState s_Irrig_GetSensorsValues(t_sint16 f_SensorsContainer_as16[])
 {
-    t_eReturnCode Ret_e = RC_OK;
+    t_eReturnState Ret_e = RC_OK;
     t_uint8 LI_u8;
     for(LI_u8 = (t_uint8)0 ; (t_uint8)LI_u8 < SNS_NUMBER && Ret_e == RC_OK; LI_u8++ )
     {

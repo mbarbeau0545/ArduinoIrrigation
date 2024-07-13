@@ -13,12 +13,18 @@
 // *                      Includes
 // ********************************************************************
 #include "Modem.h"
+#include "./ConfigSpecific/HAL/Arduino_CfgSpec.h"
 #include <SoftwareSerial.h>
 #include <stdio.h>
+
 // ********************************************************************
 // *                      Defines
 // ********************************************************************
-#define ESP8266_END_MARKER "\r\nOK\r\n"
+#define ESP8266_END_MARKER_OK    "OK"
+#define ESP8266_END_MARKER_ERR   "ERROR"
+#define ESP8266_END_MARKER_SEND "SEND"
+#define ESP8266_END_MARKER_BUSY "busy"
+
 // ********************************************************************
 // *                      Types
 // ********************************************************************
@@ -43,9 +49,9 @@ SoftwareSerial * g_esp8266Serial_pcl;
 /**********************
 * Modem_InitCom
 ***********************/
-t_eReturnCode Modem_InitCom(t_uint32 f_baudrate_u32, t_uint8 f_rxPin_u8, t_uint8 f_txPin_u8)
+t_eReturnState Modem_InitCom(t_uint32 f_baudrate_u32, t_uint8 f_rxPin_u8, t_uint8 f_txPin_u8)
 {
-    t_eReturnCode Ret_e = RC_OK;
+    t_eReturnState Ret_e = RC_OK;
     g_esp8266Serial_pcl = new SoftwareSerial(f_rxPin_u8, f_txPin_u8);
     g_esp8266Serial_pcl->begin(f_baudrate_u32);
     if(g_esp8266Serial_pcl == NULL)
@@ -71,9 +77,9 @@ void Modem_EndCom(void)
 /**********************
 * Modem_ReadBuffer
 ***********************/
-t_eReturnCode Modem_Write(const char *f_txbuffer_pc)
+t_eReturnState Modem_Write(const char *f_txbuffer_pc)
 {
-    t_eReturnCode Ret_e = RC_OK;
+    t_eReturnState Ret_e = RC_OK;
     size_t SendBufferSize_ui;
     size_t BufferSizeToSend_ui;
     t_uint8 LI_u8;
@@ -114,58 +120,60 @@ t_eReturnCode Modem_Write(const char *f_txbuffer_pc)
 /**********************
 * Modem_ReadBuffer
 ***********************/
-t_eReturnCode Modem_ReadBuffer(char *f_rxBuffer_pc) {
-    t_eReturnCode Ret_e = RC_OK;
-    char rcvData_c;
-    char RcvResponse_ac[MODEM_MAX_BUFF_SIZE]; 
+t_eReturnState Modem_ReadBuffer(char *f_rxBuffer_pc) {
+    t_eReturnState Ret_e = RC_OK;
+    t_uint8 rcvData_u8;
+    t_uint8 LI_u8;
+    unsigned char rcvData_c;
     t_uint8 idxResponse_u8 = 0;
     t_uint32 startTime_u32;
-    char *checkmemcpy;
-    
-    if (f_rxBuffer_pc == (const char *)NULL) 
-    {
+    if (f_rxBuffer_pc == (char *)NULL) {
         Ret_e = RC_ERROR_PTR_NULL;
     }
-    if (g_Modem_Initialized_b != (t_bool)true) 
-    {
+    if (g_Modem_Initialized_b != (t_bool)true) {
         Ret_e = RC_ERROR_MODULE_NOT_INITIALIZED;
     }
-    if (Ret_e == RC_OK) 
-    {
+    if (Ret_e == RC_OK) {
         g_esp8266Serial_pcl->flush(); // Vider le tampon de réception
         startTime_u32 = millis();
-        while ((g_esp8266Serial_pcl->available() > (int)0) && (millis() - startTime_u32 < MODEM_TIMEOUT))
+        while ((g_esp8266Serial_pcl->available() > (int)0) && (millis() - startTime_u32 < MODEM_TIMEOUT)) 
         {
             if (idxResponse_u8 > (MODEM_MAX_BUFF_SIZE - 2)) 
             {
                 break;
-            }
-            else
+            } 
+            else 
             {
-                rcvData_c = (char)g_esp8266Serial_pcl->read();
-                RcvResponse_ac[idxResponse_u8] = (char)rcvData_c;
-                idxResponse_u8 += (t_uint8)1;
-                //essaisResponse[index_u8++] = (char)rcvData_c;
-                //rcvData_c = (char)' ';
-                delay(5);
+                rcvData_u8 = (t_uint8)g_esp8266Serial_pcl->read();
+                rcvData_c = (unsigned char)rcvData_u8;
+                f_rxBuffer_pc[idxResponse_u8++] = rcvData_c;
+                // Every 4 bytes, check for balise messages
+                if (idxResponse_u8 % 4 == 0) {
+                    f_rxBuffer_pc[idxResponse_u8] = '\0'; // Terminate the string before checking
+                    if (strstr((const char*)f_rxBuffer_pc, ESP8266_END_MARKER_OK) != NULL
+                        || strstr((const char*)f_rxBuffer_pc, ESP8266_END_MARKER_ERR) != NULL
+                        || strstr((const char*)f_rxBuffer_pc, ESP8266_END_MARKER_SEND) != NULL) 
+                        
+                    {
+                        //DEBUG_PRINTLN("Balise found");
+                        //DEBUG_PRINTLN((const char*)f_rxBuffer_pc); // Print the response for diagnostic
+                        break;
+                    } 
+                    if (strstr((const char*)f_rxBuffer_pc, ESP8266_END_MARKER_BUSY) != NULL) 
+                    {
+                        // Wait a bit, module is busy
+                        delay(1000);
+                    }
+                }
             }
         }
-        //if Ret_e = RC_WARNING_NOT_ALLOWED, return something 
-        if (idxResponse_u8 > (t_uint8)0) 
+        if (idxResponse_u8 > 0) 
         {
-            RcvResponse_ac[idxResponse_u8] = '\0';
-            // Copie de la réponse dans le tampon de sortie
-            checkmemcpy = strncpy((char *)f_rxBuffer_pc, (const char *)RcvResponse_ac, MODEM_MAX_BUFF_SIZE);
-            if ((char *)checkmemcpy != (char *)f_rxBuffer_pc) 
-            {
-                Ret_e = RC_ERROR_COPY_FAILED;
-            }
-            else
-            {// make sure t o terminate as normal
-                f_rxBuffer_pc[MODEM_MAX_BUFF_SIZE - 1] = '\0';
-            }
-        }
-        else
+            f_rxBuffer_pc[idxResponse_u8] = '\0'; // Terminate the response string
+            memset(f_rxBuffer_pc + idxResponse_u8, '\0', MODEM_MAX_BUFF_SIZE - idxResponse_u8);
+            
+        } 
+        else 
         {
             Ret_e = RC_WARNING_NO_OPERATION;
         }
